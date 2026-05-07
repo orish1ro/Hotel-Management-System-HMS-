@@ -1,0 +1,328 @@
+/* =============================================
+   RAGADIO PLAZA HOTEL — STAFF RESPONSIVE CSS
+   Mobile-first responsive overrides
+   Drop this in: public/css/staff-responsive.css
+   ============================================= */
+
+/* ── Ensure html root allows scrolling on mobile ── */
+html {
+    overflow-y: auto !important;
+    height: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── Hamburger Toggle Button ── */
+#sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1100;
+    background: #003366;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 51, 102, 0.35);
+    transition: background 0.2s;
+}
+#sidebar-toggle:hover { background: #004fa3; }
+
+/* ── Overlay (dims content when sidebar opens) ── */
+#sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+}
+#sidebar-overlay.active { display: block; }
+
+
+/* ==============================================
+   BREAKPOINT: Tablet & Mobile (≤ 900px)
+   ============================================== */
+@media (max-width: 900px) {
+
+    /* ── Show hamburger button ── */
+    #sidebar-toggle {
+        display: flex;
+    }
+
+    /* ── Sidebar slides in from left ── */
+    #main-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
+        width: 260px !important;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+    #main-sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* ── Body no longer needs left padding ── */
+    body {
+        padding-left: 0 !important;
+        overflow-x: hidden;
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100%;
+    }
+
+    /* ── Give content a top bar so it clears the toggle button ── */
+    .container,
+    .hk-wrapper,
+    .messages-wrapper {
+        padding-top: 64px !important;
+    }
+
+    /* ── Dashboard container fills screen ── */
+    .dashboard-container {
+        padding: 70px 16px 16px 16px !important;
+        height: auto !important;
+        min-height: 100vh;
+        overflow: visible !important;
+    }
+
+    /* ── Metrics grid: 2 columns on tablet ── */
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    /* ── Rooms container ── */
+    .rooms-container {
+        padding: 70px 14px 16px 14px !important;
+        height: auto !important;
+        min-height: 100vh;
+        overflow: visible !important;
+    }
+
+    /* ── Rooms grid: 2 columns ── */
+    .rooms-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* ── Housekeeping grid: 2 columns ── */
+    .hk-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* ── Table: allow horizontal scroll ── */
+    .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    table {
+        min-width: 620px;
+    }
+
+    /* ── Messages layout ── */
+    .messages-wrapper {
+        margin-left: 0 !important;
+        flex-direction: column;
+        height: auto !important;
+        min-height: 100vh;
+        overflow-y: auto !important;
+    }
+    .guest-panel {
+        width: 100% !important;
+        min-width: unset !important;
+        max-height: 240px;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .chat-area,
+    #chat-window {
+        height: calc(100vh - 300px);
+        min-height: 400px;
+    }
+
+    /* ── Header flex: stack on mobile ── */
+    .header-flex {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    /* ── Transactions filter bar: stack vertically ── */
+    .transactions-filter-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+}
+
+
+/* ==============================================
+   BREAKPOINT: Mobile only (≤ 600px)
+   ============================================== */
+@media (max-width: 600px) {
+
+    /* ── Padding for main content ── */
+    .container,
+    .hk-wrapper {
+        padding: 64px 12px 20px 12px !important;
+    }
+    .dashboard-container {
+        padding: 64px 12px 20px 12px !important;
+    }
+    .rooms-container {
+        padding: 64px 12px 16px 12px !important;
+    }
+
+    /* ── Section title font size ── */
+    .section-title {
+        font-size: 16px !important;
+    }
+
+    /* ── Metrics: single column on small phones ── */
+    .metrics-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+    .metric-card {
+        padding: 12px 14px !important;
+        min-height: 70px !important;
+    }
+    .metric-value {
+        font-size: 18px !important;
+    }
+    .metric-title {
+        font-size: 10px !important;
+    }
+
+    /* ── Rooms grid: 1 column ── */
+    .rooms-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── Housekeeping grid: 1 column ── */
+    .hk-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── Reservation actions: stack buttons ── */
+    td .btn-confirm,
+    td .btn-cancel,
+    td .btn-checkout {
+        display: block !important;
+        width: 100% !important;
+        margin: 4px 0 !important;
+        text-align: center;
+    }
+    td form { display: block !important; margin-bottom: 4px !important; }
+
+    /* ── Edit room card: single column ── */
+    .edit-room-grid,
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── Transactions filter: single column ── */
+    div[style*="grid-template-columns:2fr 1fr 1fr 1fr 1fr auto"] {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    /* ── Filter action buttons full-width ── */
+    div[style*="display:flex; gap:8px;"] button[type="submit"],
+    div[style*="display:flex; gap:8px;"] a {
+        width: 100%;
+    }
+
+    /* ── Pagination readable on mobile ── */
+    .pagination-wrapper nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .pagination-wrapper nav > div:last-child {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* ── Admin dashboard: hide trend indicator on very small screens ── */
+    .trend-indicator {
+        font-size: 11px !important;
+        padding: 3px 7px !important;
+    }
+
+    /* ── Table cells: smaller padding ── */
+    td, th {
+        padding: 10px 12px !important;
+        font-size: 12px !important;
+    }
+
+    /* ── Housekeeping filter buttons wrap ── */
+    .hk-filter-bar {
+        gap: 6px;
+    }
+    .hk-filter-btn {
+        font-size: 11px !important;
+        padding: 5px 12px !important;
+    }
+
+    /* ── Messages layout ── */
+    .messages-wrapper {
+        padding-top: 56px !important;
+    }
+    .guest-panel {
+        max-height: 200px;
+    }
+    #staff-input {
+        font-size: 13px !important;
+    }
+    #staff-send-btn {
+        padding: 12px 16px !important;
+        font-size: 13px !important;
+    }
+
+    /* ── Payment notification: stack details ── */
+    #paymentNotif > div:last-child {
+        flex-direction: column;
+    }
+
+    /* ── Admin dashboard recent reservations table ── */
+    .table-container {
+        border-radius: 12px !important;
+    }
+
+    /* ── Add/Edit room: upload zone smaller ── */
+    #uploadZone {
+        padding: 20px 14px !important;
+    }
+    div[style*="grid-template-columns:180px 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── Edit room: current image full width ── */
+    div[id="currentImageWrap"] img {
+        width: 100% !important;
+        height: 150px !important;
+    }
+
+    /* ── Form cards on add/edit room ── */
+    .form-card {
+        padding: 20px 16px !important;
+    }
+}
+
+
+/* ==============================================
+   UTILITY: Section title base (shared)
+   ============================================== */
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}

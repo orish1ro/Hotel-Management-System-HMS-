@@ -1,0 +1,820 @@
+/* Import Modern Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* =========================================
+   1. GLOBAL & NAVIGATION
+   ========================================= */
+body { 
+    margin: 0; 
+    padding-left: 260px; /* Space for sidebar */
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+    background-color: #f4f7f9; 
+    color: #334155;
+}
+
+.admin-nav { 
+    background-color: #003366; 
+    color: white; 
+    padding: 30px 20px; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: flex-start; 
+    align-items: flex-start; /* Removed 'stretch' so it stops deforming the sidebar */
+    width: 260px; 
+    height: 100vh; 
+    position: fixed; 
+    top: 0;
+    left: 0;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.05);
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+.admin-nav > div {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    margin-bottom: 40px;
+    width: 100%;
+}
+
+.admin-nav h2 { 
+    font-size: 1.3rem; 
+    font-weight: 800;
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    margin-bottom: 10px !important;
+    color: #f8fafc;
+}
+
+.admin-nav span {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white;
+    font-weight: 600;
+}
+
+.admin-menu { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 8px; 
+    width: 100%;
+    flex-grow: 1; /* Takes up the remaining height so we can push logout to the bottom */
+}
+
+.admin-menu a { 
+    color: #cbd5e1; 
+    text-decoration: none; 
+    font-size: 14px; 
+    font-weight: 500; 
+    transition: all 0.3s ease;
+    padding: 14px 16px;
+    width: 100%; /* Keeps all highlight boxes equal size */
+    border-radius: 12px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+.admin-menu a:hover { 
+    color: #f8fafc; 
+    background-color: rgba(255, 255, 255, 0.1); 
+}
+
+.admin-menu a.active { 
+    color: #ffffff; 
+    background-color: #3b82f6; 
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    font-weight: 600;
+}
+
+.btn-logout { 
+    background-color: #ef4444 !important; 
+    color: white !important; 
+    margin-top: auto !important; /* This pushes the button to the absolute bottom */
+    margin-bottom: 10px;
+    font-weight: 600;
+    justify-content: flex-start; /* Aligns text to the left instead of center */
+}
+
+.btn-logout:hover {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* =========================================
+   DASHBOARD ENHANCEMENTS & NO-SCROLL
+   ========================================= */
+
+/* Stop the whole screen from scrolling */
+body {
+    height: 100vh;
+    overflow: hidden; 
+    margin: 0;
+}
+
+.dashboard-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 40px 30px 40px !important;
+    box-sizing: border-box; /* This stops the padding from making the screen too big */
+    overflow: hidden;
+}
+/* =========================================
+   DASHBOARD METRIC CARDS (COMPACT SIZE)
+   ========================================= */
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 16px; /* Slightly tighter gap between cards */
+    margin-bottom: 16px; /* Less space below the grid to bring the table up */
+}
+
+.metric-card {
+    background-color: #ffffff; 
+    padding: 16px 20px; /* Reduced padding (was 24px) */
+    border-radius: 12px; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04); 
+    border: 1px solid #e2e8f0; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 85px; /* Reduced height (was 110px) */
+}
+
+.metric-title {
+    font-size: 11px; /* Slightly smaller text */
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.metric-value {
+    font-size: 22px; /* Smaller numbers (was 28px) */
+    font-weight: 800;
+    color: #0f172a;
+    margin-top: 4px;
+}   
+
+/* Make table fill the bottom space and scroll inside */
+/* =========================================
+   RECENT TRANSACTIONS TABLE BOX
+   ========================================= */
+
+.dashboard-table {
+    flex-grow: 1; /* Tells the box to take up all the remaining space at the bottom */
+    background: #ffffff; /* Makes the box white */
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    overflow-y: auto; /* If there are 10+ transactions, only the inside of this box will scroll */
+    margin-bottom: 0; /* Removes extra space at the bottom */
+}
+
+/* Make sure the table fits exactly inside the box */
+.dashboard-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dashboard-table th {
+    background-color: #f8fafc;
+    position: sticky; /* Keeps the header at the top when scrolling inside the box */
+    top: 0;
+    z-index: 10;
+    padding: 14px 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dashboard-table td {
+    padding: 14px 20px;
+    font-size: 13px;
+    color: #475569;
+    border-bottom: 1px solid #f1f5f9;
+}
+/* Proper Alignment Conventions */
+.text-left { 
+    text-align: left !important; 
+}
+.num-header, .text-right { 
+    text-align: right !important; 
+}
+
+/* Revenue Up/Down Pill Design */
+.trend-indicator {
+    font-size: 14px;
+    font-weight: 800;
+    padding: 5px 10px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.trend-up {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+.trend-down {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* =========================================
+   3. TABLES
+   ========================================= */
+.table-container { 
+    background: white; 
+    border-radius: 20px; 
+    border: 1px solid #e2e8f0; 
+    overflow: hidden; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+}
+
+table { width: 100%; border-collapse: collapse; text-align: left; }
+
+th { 
+    background-color: #f8fafc; 
+    color: #64748b; 
+    font-size: 12px; 
+    text-transform: uppercase; 
+    font-weight: 700; 
+    padding: 12px 20px; 
+    border-bottom: 1px solid #e2e8f0; 
+    letter-spacing: 0.5px;
+}
+
+td { 
+    padding: 12px 20px; 
+    font-size: 14px; 
+    color: #475569; 
+    font-weight: 500;
+    border-bottom: 1px solid #f1f5f9; 
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover { background-color: #f8fafc; }
+
+/* =========================================
+   ROOM CARD — FIXED & PROFESSIONAL
+   ========================================= */
+
+.rooms-container {
+    height: calc(100vh - 64px); /* adjust 64px to your header height */
+    display: flex;
+    flex-direction: column;
+    padding: 24px 32px 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.rooms-scroll-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+/* CARD */
+.room-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s;
+}
+.room-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+
+.room-img {
+    height: 120px;
+    background-size: cover;
+    background-position: center;
+    background-color: #cbd5e1;
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* STATUS BADGE */
+.status-tag {
+    position: absolute;
+    top: 8px; left: 8px;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.6px;
+    padding: 2px 7px;       /* reduced from 3px 9px */
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+.status-Available   { background: #dcfce7; color: #166534; }
+.status-Booked      { background: #fee2e2; color: #991b1b; }
+.status-Maintenance { background: #fef9c3; color: #854d0e; }
+
+/* INFO BLOCK */
+.room-info {
+    padding: 14px 16px 10px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ← STRING LEFT | NUMBER RIGHT → */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.room-title   { font-size: 14px; font-weight: 700; color: #0f172a; }
+.room-number  { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 5px; }
+.room-meta    { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 5px; }
+.price-numeric { font-size: 14px; font-weight: 800; color: #2563eb; }
+
+.room-divider { border: none; border-top: 1px solid #f1f5f9; margin: 2px 0; }
+
+/* AVAILABILITY */
+.room-availability { padding: 14px 14px 0; }
+.avail-toggle {
+    width: 100%; padding: 7px; border-radius: 8px; border: none;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: opacity 0.15s;
+}
+.avail-toggle:hover { opacity: 0.85; }
+.avail-booked    { background: #fee2e2; color: #991b1b; }
+.avail-available { background: #dcfce7; color: #166534; }
+
+/* ACTIONS */
+
+.btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #1d4ed8;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 2px 6px rgba(29,78,216,0.25);
+}
+.btn-add:hover {
+    background: #1e40af;
+    transform: translateY(-1px);
+}
+.room-actions {
+    padding: 10px 14px 14px;
+    display: flex; gap: 8px;
+    margin-top: 8px;
+}
+.btn-edit, .btn-delete {
+    flex: 1; padding: 7px 0; border-radius: 8px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    border: none; transition: opacity 0.15s; text-decoration: none;
+}
+.btn-edit   { background: #eff6ff; color: #1d4ed8; }
+.btn-delete { background: #fff1f2; color: #be123c; }
+.btn-edit:hover, .btn-delete:hover { opacity: 0.8; }
+
+/* PAGINATION */
+.pagination-wrapper { padding: 16px 0 4px; }
+
+/* =========================================
+   5. STATUS TAGS & BADGES
+   ========================================= */
+.status-badge, .status-tag { 
+    padding: 6px 14px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    display: inline-block; 
+    letter-spacing: 0.5px;
+}
+
+.status-Available, .status-Confirmed, .status-Paid { background-color: #dcfce7; color: #166534; }
+.status-Pending { background-color: #fef08a; color: #854d0e; }
+.status-Booked, .status-Cancelled { background-color: #fee2e2; color: #991b1b; }
+.status-Needs\ Cleaning { background-color: #ffedd5; color: #9a3412; }
+.status-Done { background-color: #f3e8ff; color: #6b21a8; }
+
+/* =========================================
+   6. ROOM AVAILABILITY TOGGLE
+   ========================================= */
+.room-availability { 
+    padding: 0 20px 16px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.avail-label { font-size: 13px; font-weight: 600; color: #64748b; }
+
+.avail-form { margin: 0; }
+
+.avail-toggle {
+    padding: 6px 14px; 
+    border: none; 
+    border-radius: 8px; 
+    font-size: 12px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    transition: 0.3s;
+}
+
+.avail-available { background: #dcfce7; color: #166534; }
+.avail-available:hover { background: #bbf7d0; }
+.avail-booked { background: #fee2e2; color: #991b1b; }
+.avail-booked:hover { background: #fecaca; }
+
+/* =========================================
+   7. FORM STYLES (COMPACT FIT TO SCREEN)
+   ========================================= */
+.form-card {
+    background: white; 
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04); 
+    border: 1px solid #e2e8f0;
+}
+
+.form-group { 
+    margin-bottom: 12px; /* Reduced from 20px */
+}
+
+.form-group label {
+    display: block; 
+    margin-bottom: 4px; /* Reduced from 8px */
+    font-weight: 700; 
+    color: #475569; 
+    font-size: 11px; /* Shrunk slightly */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    width: 100%; 
+    padding: 10px 14px; /* Reduced padding */
+    border: 1px solid #cbd5e1; 
+    border-radius: 8px;
+    font-size: 13px; 
+    color: #1e293b; 
+    background-color: #f8fafc; 
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+.form-group input:focus, 
+.form-group select:focus, 
+.form-group textarea:focus {
+    outline: none; 
+    border-color: #3b82f6; 
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Shrunk Image Picker Thumbnails */
+.compact-picker {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto; 
+    padding-bottom: 8px;
+}
+
+.compact-picker .img-option img {
+    height: 70px !important; /* Shrunk from 90px to save space */
+    width: 110px;
+    object-fit: cover; 
+    border-radius: 8px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: 0.2s ease-in-out;
+}
+
+.compact-picker .img-option.selected img {
+    border-color: #3b82f6;
+    transform: scale(1.05);
+}
+
+.btn-save {
+    background-color: #0f172a; 
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    transition: 0.3s;
+}
+
+.btn-save:hover { 
+    background-color: #1e293b; 
+    transform: translateY(-2px); 
+}
+
+/* =========================================
+   8. HOUSEKEEPING PAGE
+   ========================================= */
+.hk-wrapper { padding: 24px 32px; }
+
+.hk-page-header { margin-bottom: 20px; }
+.hk-page-header h2 { font-size: 20px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+.hk-page-header p  { font-size: 13px; color: #94a3b8; margin-top: 3px; }
+
+.hk-summary { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.hk-pill { display: flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 50px; padding: 6px 14px; font-size: 12px; font-weight: 600; color: #475569; }
+.hk-pill .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-needs { background: #EA580C; }
+.dot-done  { background: #7C3AED; }
+.dot-avail { background: #16A34A; }
+
+.hk-filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.hk-filter-btn { padding: 6px 16px; border-radius: 50px; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
+.hk-filter-btn:hover { border-color: #003366; color: #003366; }
+.hk-filter-btn.active  { background: #003366; border-color: #003366; color: #fff; }
+.hk-filter-btn.f-needs.active { background: #EA580C; border-color: #EA580C; color: #fff; }
+.hk-filter-btn.f-done.active  { background: #7C3AED; border-color: #7C3AED; color: #fff; }
+
+.hk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+
+.hk-card { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; display: flex; flex-direction: column; }
+
+.hk-card-accent { height: 4px; flex-shrink: 0; }
+.accent-Available      { background: #16A34A; }
+.accent-Needs-Cleaning { background: #EA580C; }
+.accent-Done           { background: #7C3AED; }
+
+.hk-card-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px 0; }
+.hk-room-label  { font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+.hk-room-number { font-size: 13px; font-weight: 700; color: #0f172a; }
+
+.hk-badge { padding: 3px 10px; border-radius: 50px; font-size: 10px; font-weight: 700; }
+.badge-Available      { background: #DCFCE7; color: #15803D; }
+.badge-Needs-Cleaning { background: #FFEDD5; color: #C2410C; }
+.badge-Done           { background: #EDE9FE; color: #6D28D9; }
+
+.hk-card-body { padding: 10px 14px 14px; flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+.hk-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+/* String LEFT, number RIGHT */
+.hk-info-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.hk-room-type { color: #0f172a; font-weight: 700; text-align: left; }
+.hk-capacity  { color: #94a3b8; font-size: 12px; text-align: right; }
+
+.hk-divider { border: none; border-top: 1px solid #f1f5f9; margin: 10px 0; }
+
+.hk-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; display: block; }
+.hk-form-row { display: flex; gap: 6px; }
+.hk-select { flex: 1; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; background: #f8fafc; color: #1e293b; cursor: pointer; }
+.hk-select:focus { outline: none; border-color: #003366; }
+.hk-btn-set { padding: 7px 14px; background: #003366; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.hk-btn-set:hover { background: #004fa3; }
+
+.hk-alert { display: flex; align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #86efac; color: #15803d; padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 600; }
+.hk-filter-btn.f-avail.active { background: #16A34A; border-color: #16A34A; color: #fff; }
+/* =========================================
+   9. RESERVATION ACTION BUTTONS
+   ========================================= */
+.btn-confirm { 
+    background-color: #dcfce7; 
+    color: #166534; 
+    border: 1px solid #86efac; 
+    padding: 8px 16px; 
+    border-radius: 8px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    font-size: 12px; 
+    transition: all 0.2s ease; 
+}
+.btn-confirm:hover { 
+    background-color: #22c55e; 
+    color: white; 
+    border-color: #22c55e;
+    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
+}
+
+.btn-cancel { 
+    background-color: #fee2e2; 
+    color: #991b1b; 
+    border: 1px solid #fca5a5; 
+    padding: 8px 16px; 
+    border-radius: 8px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    font-size: 12px; 
+    transition: all 0.2s ease; 
+    margin-left: 8px; 
+}
+.btn-cancel:hover { 
+    background-color: #ef4444; 
+    color: white; 
+    border-color: #ef4444;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+}
+
+.btn-checkout { 
+    background-color: #f1f5f9; 
+    color: #334155; 
+    border: 1px solid #cbd5e1; 
+    padding: 8px 16px; 
+    border-radius: 8px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    font-size: 12px; 
+    transition: all 0.2s ease; 
+}
+.btn-checkout:hover { 
+    background-color: #334155; 
+    color: white; 
+    border-color: #334155;
+    box-shadow: 0 4px 10px rgba(51, 65, 85, 0.3);
+}
+
+/* =========================================
+   10. PAGINATION STYLES
+   ========================================= */
+.pagination-wrapper nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.pagination-wrapper nav p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.pagination-wrapper nav svg {
+    width: 20px;
+    height: 20px;
+}
+
+.pagination-wrapper nav > div:last-child {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-wrapper span[aria-disabled="true"] {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    color: #94a3b8;
+    background: #f8fafc;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pagination-wrapper a {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    color: #3b82f6;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+.pagination-wrapper a:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.pagination-wrapper span[aria-current="page"] > span {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #3b82f6;
+    background: #3b82f6;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+}
+/* =========================================
+   ADD/EDIT ROOM FORM FIXES
+   ========================================= */
+
+/* Center the form and prevent horizontal stretching */
+.compact-container {
+    height: 100vh;
+    overflow-y: auto;
+    padding: 40px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center; /* Centers the card horizontally */
+    align-items: flex-start; 
+}
+
+.compact-card {
+    width: 100%;
+    max-width: 750px; /* Prevents the form from becoming too wide */
+    background: white; 
+    padding: 35px; 
+    border-radius: 20px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.04); 
+    border: 1px solid #e2e8f0;
+}
+
+/* Image Picker Thumbnails Fix */
+.compact-picker {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto; /* Allows scrolling left/right if there are many images */
+    padding-bottom: 12px;
+    margin-top: 8px;
+}
+
+.compact-picker .img-option img {
+    height: 90px !important; /* Locks the height so it isn't massive */
+    width: 140px;
+    object-fit: cover; /* Ensures images don't warp */
+    border-radius: 8px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: 0.2s ease-in-out;
+}
+
+.compact-picker .img-option.selected img {
+    border-color: #3b82f6;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+
+/* Make action buttons fit nicely */
+.action-buttons { 
+    display: flex; 
+    gap: 15px; 
+    align-items: center; 
+    margin-top: 25px; 
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+.action-buttons .btn-save { 
+    flex: 1; 
+    padding: 14px; 
+    background: #0f172a; 
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    transition: 0.3s; 
+}
+.action-buttons .btn-save:hover { background: #1e293b; transform: translateY(-2px); }
+.action-buttons .cancel-link { 
+    color: #64748b; 
+    font-weight: 600; 
+    text-decoration: none; 
+    font-size: 14px; 
+    padding: 14px 20px; 
+    border-radius: 10px; 
+    transition: 0.2s; 
+}
+.action-buttons .cancel-link:hover { background: #f1f5f9; color: #0f172a; }
+
+/* =========================================
+   UI CONVENTION: ALIGNMENT
+   ========================================= */
+
+/* Use this for IDs, Currency, and Dates in tables */
+.text-right { 
+    text-align: right !important; 
+}
+
+/* Use this for names and descriptions */
+.text-left { 
+    text-align: left !important; 
+}
+
+/* Only affects numeric inputs with this specific class */
+input.numeric-field {
+    text-align: right;
+}
+
+/* Adjust table headers to match the data below them */
+th.text-right {
+    text-align: right !important;
+}

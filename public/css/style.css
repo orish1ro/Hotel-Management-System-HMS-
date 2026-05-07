@@ -1,0 +1,1199 @@
+/* =========================================
+   RAGADIO PLAZA HOTEL — MASTER STYLESHEET
+   Sections:
+   1.  Global Settings & Typography
+   2.  Header & Navigation
+   3.  Hero Section
+   4.  Features & About Sections
+   5.  Room Cards (Grid View)
+   6.  Booking Page & Forms
+   7.  Secure Payment Page
+   8.  Footer
+   9.  Transaction Receipt Page
+   10. Responsive (Tablet, Mobile, Small)
+========================================= */
+
+
+/* =========================================
+   1. GLOBAL SETTINGS & TYPOGRAPHY
+========================================= */
+:root {
+    --navy:       #003366;
+    --gold:       #f1c40f;
+    --light-gray: #f8fafc;
+    --text-dark:  #333333;
+    --text-muted: #64748b;
+    --white:      #ffffff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-gray);
+    color: var(--text-dark);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Numeric figures always tabular-aligned */
+.room-price,
+.receipt-total,
+.receipt-table tbody td:last-child,
+.summary-line span:last-child,
+.receipt-row .value,
+.amount-input-group input {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+
+
+/* =========================================
+   2. HEADER & NAVIGATION
+========================================= */
+header {
+    background-color: var(--navy);
+    padding: 0 60px;
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+.logo-text {
+    color: var(--white);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.search-container {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 30px;
+}
+
+.search-container input {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    padding: 10px 15px;
+    color: var(--white);
+    width: 350px;
+    outline: none;
+}
+
+.search-container input::placeholder { color: rgba(255,255,255,0.5); }
+
+nav { display: flex; gap: 30px; }
+
+nav a {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: color 0.2s;
+}
+
+nav a:hover,
+nav a.active { color: var(--gold); }
+
+
+/* =========================================
+   3. HERO SECTION
+========================================= */
+.hero {
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                      url('../images_for_webs/lobby.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: var(--white);
+    padding: 20px;
+}
+
+.hero h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 46px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.hero p {
+    font-size: 16px;
+    max-width: 600px;
+    margin-bottom: 25px;
+    opacity: 0.9;
+}
+
+.hero-buttons { display: flex; gap: 15px; justify-content: center; }
+
+.btn {
+    padding: 12px 28px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.btn-primary  { background-color: var(--gold); color: #222; border: none; }
+.btn-secondary { background: transparent; border: 1px solid var(--white); color: var(--white); }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+
+/* =========================================
+   4. FEATURES & ABOUT SECTIONS
+========================================= */
+.features-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    padding: 70px 60px;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: var(--white);
+    padding: 36px 24px 30px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    transition: 0.3s;
+}
+
+.feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+.feature-card i      { font-size: 30px; color: var(--navy); margin-bottom: 15px; display: block; }
+.feature-card h4     { margin-bottom: 10px; color: var(--navy); font-size: 18px; }
+.feature-card p      { font-size: 13px; color: var(--text-muted); }
+
+.about-section { padding: 80px 20px; background: var(--white); text-align: center; }
+.about-section h2 { font-size: 32px; color: var(--navy); margin-bottom: 20px; }
+.divider { width: 60px; height: 3px; background: var(--gold); margin: 0 auto 20px; }
+.about-section p { max-width: 800px; margin: 0 auto; color: var(--text-muted); line-height: 1.8; }
+
+
+/* =========================================
+   5. ROOM CARDS (Grid View)
+========================================= */
+.rooms-page-container {
+    padding: 60px 5%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.rooms-title-section { text-align: center; margin-bottom: 50px; }
+
+.rooms-title-section h1 {
+    font-size: 36px;
+    color: var(--navy);
+    margin-bottom: 10px;
+}
+
+.rooms-title-section p { color: var(--text-muted); font-size: 15px; }
+
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.room-card {
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    transition: 0.3s;
+    position: relative;
+}
+
+.room-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+
+.room-image-area {
+    height: 220px;
+    background-color: #cbd5e1;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.room-image-area img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.room-image-area::before {
+    
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    opacity: 0.3;
+}
+
+.status-badge {
+    position: absolute;
+    top: 15px; right: 15px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #fff;
+    z-index: 2;
+}
+
+.status-Available { background-color: #10b981; }
+.status-Booked    { background-color: #ef4444; }
+
+.room-card-info { padding: 28px 28px 20px; flex-grow: 1; }
+
+.room-card-info h3 {
+    font-size: 20px;
+    color: var(--navy);
+    margin-bottom: 8px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.room-card-info p { font-size: 14px; color: var(--text-muted); margin-bottom: 5px; text-align: left; }
+
+.room-price {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--navy);
+    margin-top: 18px;
+    display: block;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+}
+
+.room-card-footer {
+    padding: 18px 28px;
+    background: #f8fafc;
+    border-top: 1px solid #edf2f7;
+}
+
+.btn-book {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background-color: var(--gold);
+    color: #222;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 13px;
+    transition: 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-book:hover:not(.disabled) {
+    background-color: #e0b30e;
+    transform: translateY(-1px);
+}
+
+.btn-book.disabled {
+    background-color: #cbd5e1;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* =========================================
+   6. BOOKING PAGE & FORMS
+========================================= */
+.booking-page-wrapper,
+.form-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 60px 20px;
+    min-height: 80vh;
+    background-color: var(--light-gray);
+}
+
+.booking-card,
+.form-card {
+    background: var(--white);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 56px 52px;
+    width: 100%;
+    max-width: 660px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.07);
+}
+
+.booking-card h2,
+.form-card h2 {
+    font-size: 26px;
+    color: var(--navy);
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-align: left;
+}
+
+.booking-card .subtitle,
+.form-card .subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 30px;
+}
+
+.section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--navy);
+    margin: 30px 0 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--gold);
+    display: inline-block;
+}
+
+.form-group { margin-bottom: 20px; }
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--navy);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    text-align: left;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-dark);
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    text-align: left;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(0,51,102,0.08);
+}
+
+.form-group input[readonly],
+.form-group input:disabled,
+.form-group select:disabled {
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.status-pill {
+    display: inline-block;
+    background-color: #d1fae5;
+    color: #065f46;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 30px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+}
+
+.payment-summary-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 20px 0;
+}
+
+.payment-summary-box p      { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
+.payment-summary-box .total-price { font-size: 22px; font-weight: 800; color: var(--navy); margin-top: 8px; }
+.payment-summary-box .note  { font-size: 12px; color: var(--text-muted); margin-top: 6px; font-style: italic; }
+
+.payment-method-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.payment-method-label input[type="radio"] {
+    accent-color: var(--navy);
+    width: 16px;
+    height: 16px;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    margin-top: 15px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-submit:hover {
+    background-color: #002244;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0,51,102,0.2);
+}
+
+
+/* =========================================
+   7. SECURE PAYMENT PAGE
+========================================= */
+.payment-body {
+    background-color: var(--light-gray);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 50px 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Payment page: give the receipt-card extra inner breathing room */
+.payment-body .receipt-card {
+    padding: 0 0 10px;
+    max-width: 520px;
+}
+
+.receipt-card .receipt-header {
+    text-align: center;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 25px;
+    padding: 36px 40px;
+}
+
+.receipt-card .receipt-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 5px;
+}
+
+.receipt-card .receipt-header p { font-size: 13px; color: var(--text-muted); }
+
+.receipt-total {
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--navy);
+    margin: 18px 0 28px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+}
+
+.receipt-row:last-of-type { border-bottom: none; }
+.receipt-row .label { color: var(--text-muted); font-weight: 500; text-align: left; }
+.receipt-row .value { color: var(--navy); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+.qr-section {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    margin: 25px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.amount-input-group { margin: 18px 0; }
+
+.amount-input-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    text-align: left;
+}
+
+.amount-input-group input {
+    width: 100%;
+    padding: 15px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+}
+
+.amount-input-group input:focus {
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(0,51,102,0.08);
+}
+
+.btn-pay {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--gold);
+    color: #222;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    margin-top: 10px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-pay:hover {
+    background-color: #e0b30e;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(241,196,15,0.3);
+}
+
+.cancel-link {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 13px;
+    color: #ef4444;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.cancel-link:hover { color: #dc2626; text-decoration: underline; }
+
+
+/* =========================================
+   8. FOOTER
+========================================= */
+.footer-container {
+    width: 100%;
+    background-color: var(--white);
+    border-top: 1px solid #e2e8f0;
+}
+
+.footer-top {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    padding: 64px 80px;
+    max-width: 1300px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.footer-col h4 {
+    color: var(--navy);
+    font-size: 14px;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: 700;
+}
+
+.footer-col p,
+.footer-col a {
+    color: var(--text-muted);
+    font-size: 14px;
+    text-decoration: none;
+    line-height: 1.8;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.footer-col a:hover { color: var(--gold); transition: color 0.2s; }
+
+.footer-col .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.footer-col .contact-item i { color: var(--navy); font-size: 14px; width: 16px; }
+
+.footer-bottom {
+    background-color: var(--navy);
+    color: rgba(255,255,255,0.75);
+    padding: 20px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+}
+
+
+/* =========================================
+   9. TRANSACTION RECEIPT PAGE
+========================================= */
+.receipt-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 20px;
+    min-height: 100vh;
+    background-color: var(--light-gray);
+}
+
+.receipt-card {
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 600px;
+    overflow: hidden;
+}
+
+.receipt-banner {
+    background-color: var(--navy);
+    padding: 34px 44px;
+    text-align: center;
+}
+
+.receipt-banner h2 {
+    color: var(--white);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+
+.receipt-banner p { color: rgba(255,255,255,0.65); font-size: 13px; letter-spacing: 0.5px; }
+
+.receipt-body { padding: 40px 44px; }
+
+.receipt-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 22px;
+}
+
+.receipt-meta p         { font-size: 13px; color: var(--text-muted); margin-bottom: 5px; text-align: left; }
+.receipt-meta p strong  { color: var(--text-dark); font-variant-numeric: tabular-nums; }
+
+.status-paid {
+    background-color: #d1fae5;
+    color: #065f46;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 30px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.receipt-billed { margin-bottom: 25px; }
+
+.receipt-billed h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--navy);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--gold);
+    display: inline-block;
+}
+
+.receipt-billed p { font-size: 14px; color: var(--text-dark); margin-bottom: 3px; }
+
+.receipt-table { width: 100%; border-collapse: collapse; margin-bottom: 22px; }
+
+.receipt-table thead tr {
+    background-color: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.receipt-table thead th {
+    padding: 11px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--navy);
+    text-align: left;
+}
+
+.receipt-table thead th:last-child { text-align: right; }
+
+.receipt-table tbody td {
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-dark);
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+    text-align: left;
+}
+
+.receipt-table tbody td:last-child {
+    text-align: right;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.receipt-table tbody td small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.receipt-summary {
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 16px 22px;
+    margin-bottom: 26px;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-muted);
+    padding: 7px 0;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+.summary-line span:first-child { text-align: left; }
+.summary-line span:last-child  { text-align: right; font-variant-numeric: tabular-nums; }
+
+.summary-line:last-child { border-bottom: none; }
+
+.summary-line.total {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--navy);
+    padding-top: 12px;
+    margin-top: 4px;
+}
+
+.receipt-footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.receipt-footer p { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+
+.receipt-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.btn-print {
+    flex: 1;
+    padding: 13px;
+    background-color: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: 0.2s;
+}
+
+.btn-print:hover { background-color: #002244; transform: translateY(-1px); }
+
+.btn-back-home {
+    flex: 1;
+    padding: 13px;
+    background-color: var(--gold);
+    color: #222;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-decoration: none;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.btn-back-home:hover { background-color: #e0b30e; transform: translateY(-1px); }
+
+
+/* =========================================
+   10. RESPONSIVE
+========================================= */
+
+/* --- TABLET (max 1024px) --- */
+@media (max-width: 1024px) {
+
+    header {
+        padding: 15px 25px;
+        height: auto;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .search-container { padding-right: 15px; }
+    .search-container input { width: 250px; }
+
+    nav { gap: 15px; }
+
+    .hero h1 { font-size: 36px; }
+
+    .features-container {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 40px 25px;
+    }
+
+    .footer-top {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 40px 30px;
+    }
+
+    .rooms-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .booking-card,
+    .form-card { padding: 30px 25px; }
+}
+
+/* --- MOBILE (max 768px) --- */
+@media (max-width: 768px) {
+
+    /* Header */
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px 20px;
+        height: auto;
+        gap: 12px;
+    }
+
+    .logo-text { font-size: 18px; }
+
+    .search-container {
+        width: 100%;
+        padding-right: 0;
+        justify-content: flex-start;
+    }
+
+    .search-container input { width: 100%; }
+
+    nav {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    nav a { font-size: 12px; }
+
+    /* Hero */
+    .hero { min-height: 50vh; padding: 40px 20px; }
+    .hero h1 { font-size: 26px; letter-spacing: 0; }
+    .hero p  { font-size: 14px; }
+
+    .hero-buttons { flex-direction: column; width: 100%; align-items: center; }
+    .btn { width: 100%; max-width: 280px; text-align: center; }
+
+    /* Features */
+    .features-container {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 30px 15px;
+        gap: 15px;
+    }
+
+    /* About */
+    .about-section { padding: 50px 20px; }
+    .about-section h2 { font-size: 24px; }
+
+    /* Rooms */
+    .rooms-page-container { padding: 40px 15px; }
+    .rooms-grid { grid-template-columns: 1fr; }
+    .rooms-title-section h1 { font-size: 26px; }
+
+    /* Booking */
+    .booking-page-wrapper,
+    .form-wrapper { padding: 30px 15px; }
+
+    .booking-card,
+    .form-card { padding: 25px 20px; }
+
+    .form-row { grid-template-columns: 1fr; }
+
+    /* Receipt page */
+    .receipt-card  { border-radius: 12px; }
+    .receipt-banner { padding: 25px 20px; }
+    .receipt-banner h2 { font-size: 18px; }
+    .receipt-body  { padding: 25px 20px; }
+    .receipt-total { font-size: 28px; }
+    .receipt-actions { flex-direction: column; }
+
+    /* Footer */
+    .footer-top {
+        grid-template-columns: 1fr;
+        padding: 40px 20px;
+        gap: 30px;
+    }
+
+    .footer-bottom { font-size: 12px; padding: 20px 15px; }
+}
+
+/* --- SMALL MOBILE (max 480px) --- */
+@media (max-width: 480px) {
+
+    .hero h1 { font-size: 22px; }
+
+    .features-container { grid-template-columns: 1fr; }
+    .feature-card { padding: 20px 15px; }
+
+    .rooms-title-section h1 { font-size: 22px; }
+
+    .receipt-banner h2 { font-size: 16px; letter-spacing: 1px; }
+
+    .receipt-meta {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .receipt-table thead th,
+    .receipt-table tbody td { padding: 10px 8px; font-size: 13px; }
+}
+
+/* --- PRINT --- */
+@media print {
+    .receipt-actions   { display: none; }
+    .receipt-container { padding: 0; background: none; }
+    .receipt-card      { box-shadow: none; border: none; }
+}
+
+/* =========================================
+   11. CUSTOMER MESSAGES PAGE
+========================================= */
+.messages-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+    min-height: 60vh;
+}
+
+.messages-header {
+    font-size: 28px;
+    color: var(--navy);
+    margin-bottom: 25px;
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 10px;
+    display: inline-block;
+    font-weight: 700;
+}
+
+.message-box {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+    transition: 0.3s;
+}
+
+.message-box:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+/* Add this class if a message is unread */
+.message-box.unread {
+    border-left: 5px solid var(--gold);
+}
+
+.message-title {
+    font-size: 18px;
+    color: var(--navy);
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.message-date {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+    display: block;
+}
+
+.message-body {
+    font-size: 14px;
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* Style for when there are no messages */
+.empty-message {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text-muted);
+    background: var(--white);
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    font-size: 15px;
+}
+
+
+/* =========================================
+   UPDATED SECTIONS FOR RAGADIO PLAZA HOTEL
+========================================= */
+
+/* --- 1. Accessibility & Typography Updates --- */
+.feature-card p { 
+    font-size: 14px; /* Increased from 13px for readability */
+    color: #475569;   /* Darkened from --text-muted for better contrast */
+}
+
+/* --- 2. Room Card Refinements (Grid View) --- */
+.room-card {
+    /* Ensure cards in a small set are centered in their container */
+    margin: 0 auto; 
+    max-width: 400px;
+}
+
+.status-badge {
+    top: 20px;   /* Added more padding from the edge */
+    right: 20px; 
+    letter-spacing: 0.5px;
+}
+
+/* --- 3. Booking Form Logic Visibility --- */
+/* Styling for fields that are "Read Only" or "System Calculated" */
+.form-group input[readonly] {
+    background-color: #f8fafc; /* Lighter than standard disabled */
+    border: 1px solid #e2e8f0;
+    color: var(--navy);       /* Keep text dark so it's readable but clearly not an input */
+    font-weight: 600;
+    cursor: default;          /* Remove the "not-allowed" cursor to feel less restrictive */
+}
+
+.section-label {
+    font-size: 13px;          /* Slightly larger for hierarchy */
+    margin-top: 40px;         /* More breathing room between sections */
+}
+
+/* --- 4. Dynamic Payment Summary Box --- */
+.payment-summary-box {
+    border-left: 4px solid var(--gold); /* Added a visual accent */
+    background: #f1f5f9;
+}
+
+.payment-summary-box .total-price {
+    display: block;
+    border-top: 1px solid #cbd5e1;
+    margin-top: 12px;
+    padding-top: 8px;
+    font-size: 24px;
+}
+
+/* --- 5. Secure Payment Page Fixes --- */
+.amount-input-group {
+    /* Suggestion: You can hide this entirely in HTML if you want 
+       to remove the manual input friction discussed earlier. */
+    display: block; 
+    margin-bottom: 30px;
+}
+
+.btn-pay {
+    margin-bottom: 20px; /* Added space before the cancel link */
+}
+
+.cancel-link {
+    display: inline-block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+/* --- 6. Global Layout Fix --- */
+.rooms-grid {
+    justify-content: center; /* Centers cards if there are only 1 or 2 */
+}
