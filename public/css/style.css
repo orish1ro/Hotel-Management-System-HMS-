@@ -504,8 +504,7 @@ nav a.active { color: var(--gold); }
 
 /* Payment page: give the receipt-card extra inner breathing room */
 .payment-body .receipt-card {
-    padding: 0 0 10px;
-    max-width: 520px;
+    max-width: 940px;
 }
 
 .receipt-card .receipt-header {

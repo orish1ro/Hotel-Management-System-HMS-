@@ -180,64 +180,248 @@
         </script>
     @endif
 
-    <div class="table-container">
+    <style>
+        body { overflow-y: auto !important; overflow-x: hidden; }
+
+        .res-table-wrap {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .res-table-wrap table { width: 100%; border-collapse: collapse; }
+        .res-table-wrap th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 14px 18px;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        .res-table-wrap td {
+            padding: 16px 18px;
+            font-size: 13.5px;
+            color: #475569;
+            font-weight: 500;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .res-table-wrap tr:last-child td { border-bottom: none; }
+        .res-table-wrap tr:hover td { background: #fafbff; }
+
+        .res-id {
+            font-size: 12px; font-weight: 800; color: #1e293b;
+            background: #f1f5f9; border: 1px solid #e2e8f0;
+            padding: 4px 10px; border-radius: 8px; letter-spacing: 0.3px; white-space: nowrap;
+        }
+        .res-guest-name { font-weight: 700; color: #0f172a; font-size: 13.5px; text-transform: capitalize; }
+        .res-room-type   { font-weight: 700; color: #0f172a; font-size: 13px; }
+        .res-room-number { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+
+        .res-method {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd;
+            border-radius: 20px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; white-space: nowrap;
+        }
+        .res-amount { font-weight: 800; color: #0f172a; font-size: 14px; white-space: nowrap; }
+        .res-date { font-size: 13px; color: #475569; white-space: nowrap; }
+        .res-date-label { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .res-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 140px; }
+
+        .res-btn-receipt {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 11.5px; font-weight: 700; color: #0284c7;
+            background: #f0f9ff; border: 1px solid #bae6fd;
+            border-radius: 7px; padding: 5px 10px; cursor: pointer;
+            text-decoration: none; transition: all 0.15s;
+            width: 100%; box-sizing: border-box;
+        }
+        .res-btn-receipt:hover { background: #e0f2fe; border-color: #7dd3fc; }
+
+        .res-btn-row { display: flex; gap: 6px; width: 100%; }
+
+        .res-btn-confirm {
+            flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+            background: #dcfce7; color: #166534; border: 1px solid #86efac;
+            padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap; width: 100%;
+        }
+        .res-btn-confirm:hover { background: #22c55e; color: #fff; border-color: #22c55e; box-shadow: 0 3px 8px rgba(34,197,94,0.3); }
+
+        .res-btn-cancel {
+            flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+            background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;
+            padding: 7px 8px; border-radius: 8px; font-size: 12px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap; width: 100%;
+        }
+        .res-btn-cancel:hover { background: #ef4444; color: #fff; border-color: #ef4444; box-shadow: 0 3px 8px rgba(239,68,68,0.3); }
+
+        .res-btn-checkout {
+            display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+            background: #1e293b; color: #fff; border: none;
+            padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; width: 100%; box-sizing: border-box;
+        }
+        .res-btn-checkout:hover { background: #0f172a; box-shadow: 0 3px 10px rgba(15,23,42,0.3); }
+
+        .res-checked-out { display: inline-flex; align-items: center; gap: 5px; color: #10b981; font-size: 12.5px; font-weight: 700; }
+        .res-no-action { color: #cbd5e1; font-size: 13px; }
+    </style>
+
+    <div class="res-table-wrap">
+        {{-- Legend bar --}}
+        <div style="display:flex;align-items:center;gap:20px;padding:12px 20px;background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
+            <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-right:4px;">Amount Guide:</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#475569;">
+                <span style="font-weight:800;color:#0f172a;">₱X.XX</span>
+                <span style="font-size:11px;font-weight:700;color:#dc2626;">+₱X.XX due</span>
+                <span style="color:#94a3b8;">= 50% deposit paid, balance due at check-in</span>
+            </span>
+            <span style="width:1px;height:16px;background:#e2e8f0;"></span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#475569;">
+                <span style="font-weight:800;color:#16a34a;">₱X.XX</span>
+                <span style="font-size:11px;font-weight:600;color:#16a34a;display:inline-flex;align-items:center;gap:3px;"><i class="fa-solid fa-circle-check" style="font-size:9px;"></i> Fully Paid</span>
+                <span style="color:#94a3b8;">= total amount, no balance owed</span>
+            </span>
+        </div>
         <table>
             <thead>
                 <tr>
-                    <th class="num-header">ID</th>
-                    <th class="text-left">Customer</th>
-                    <th class="text-left">Room Details</th>
-                    <th class="text-left">Payment Method</th>
-                    <th class="num-header">Amount</th>
-                    <th class="num-header">Check-In</th>
-                    <th class="num-header">Check-Out</th>
-                    <th class="text-left">Status</th>
-                    <th class="text-left">Actions</th>
+                    <th style="text-align:center;">ID</th>
+                    <th>Customer</th>
+                    <th>Room</th>
+                    <th>Payment</th>
+                    <th style="text-align:right;">Amount</th>
+                    <th style="text-align:center;">Check-In</th>
+                    <th style="text-align:center;">Check-Out</th>
+                    <th style="text-align:center;">Booking Status</th>
+                    <th style="text-align:center;">Payment Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($reservations as $res)
                 <tr>
-                    <td class="num-header"><strong>#{{ str_pad($res->RESERVATION_ID, 4, '0', STR_PAD_LEFT) }}</strong></td>
-                    <td class="text-left" style="text-transform: capitalize;">{{ $res->First_Name }} {{ $res->Last_Name }}</td>
-                    <td class="text-left">{{ $res->Room_Type }} (#{{ $res->Room_Number }})</td>
-                    <td class="text-left">{{ $res->Payment_Method ?? '—' }}</td>
-                    <td class="num-header">₱{{ number_format($res->Amount_Paid ?? $res->Total_Amount, 2) }}</td>
-                    <td class="num-header">{{ \Carbon\Carbon::parse($res->Check_In_Date)->format('M d, Y') }}</td>
-                    <td class="num-header">{{ \Carbon\Carbon::parse($res->Check_Out_Date)->format('M d, Y') }}</td>
-                    <td><span class="status-badge status-{{ $res->Status }}">{{ $res->Status }}</span></td>
+                    <td style="text-align:center;">
+                        <span class="res-id">#{{ str_pad($res->RESERVATION_ID, 4, '0', STR_PAD_LEFT) }}</span>
+                    </td>
+                    <td><span class="res-guest-name">{{ $res->First_Name }} {{ $res->Last_Name }}</span></td>
                     <td>
-                        @if($res->Status == 'Pending')
-                            <form action="/staff/update-reservation/{{ $res->RESERVATION_ID }}" method="POST" style="display:inline;">
-                                @csrf
-                                <input type="hidden" name="status" value="Confirmed">
-                                <button type="submit" class="btn-confirm">Confirm</button>
-                            </form>
-                            <form action="/staff/update-reservation/{{ $res->RESERVATION_ID }}" method="POST" style="display:inline;">
-                                @csrf
-                                <input type="hidden" name="status" value="Cancelled">
-                                <button type="submit" class="btn-cancel" onclick="return confirm('Cancel this booking? The room will be freed up.');">Cancel</button>
-                            </form>
+                        <div class="res-room-type">{{ $res->Room_Type }}</div>
+                        <div class="res-room-number">#{{ $res->Room_Number }}</div>
+                    </td>
+                    <td>
+                        <span class="res-method">
+                            <i class="fa-solid fa-credit-card" style="font-size:10px;"></i>
+                            {{ $res->Payment_Method ?? '—' }}
+                        </span>
+                    </td>
+                    <td style="text-align:right;">
+                        @php
+                            $deposit  = $res->Amount_Paid ?? $res->Total_Amount;
+                            $fullPrice = $deposit * 2;
+                            $balance  = $deposit;
+                            $isFullyPaid = ($res->Payment_Status ?? '50% Deposit') === 'Fully Paid';
+                        @endphp
 
-                        @elseif($res->Status == 'Confirmed' || $res->Status == 'Booked')
-                            <form action="/staff/checkout/{{ $res->RESERVATION_ID }}" method="POST" style="display:inline;">
-                                @csrf
-                                <button type="submit" class="btn-checkout" onclick="return confirm('Check out {{ $res->First_Name }} {{ $res->Last_Name }}? Room will be set to Needs Cleaning.');">
-                                    <i class="fa-solid fa-door-open"></i> Check Out
-                                </button>
-                            </form>
-
-                        @elseif($res->Status == 'Checked Out')
-                            <span style="color: #10b981; font-size: 13px; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> Checked Out</span>
-
+                        @if($isFullyPaid)
+                            <div style="font-weight:800;color:#16a34a;font-size:14px;">₱{{ number_format($fullPrice, 2) }}</div>
+                            <div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:2px;">
+                                <i class="fa-solid fa-circle-check" style="font-size:9px;"></i> Fully Paid
+                            </div>
                         @else
-                            <span style="color: #94a3b8; font-size: 12px; font-weight: 600;">—</span>
+                            <div style="font-weight:800;color:#0f172a;font-size:14px;">₱{{ number_format($deposit, 2) }}</div>
+                            <div style="font-size:11px;font-weight:700;color:#dc2626;margin-top:3px;">
+                                +₱{{ number_format($balance, 2) }} due
+                            </div>
                         @endif
+                    </td>
+                    <td style="text-align:center;">
+                        <div class="res-date-label">Check-In</div>
+                        <div class="res-date">{{ \Carbon\Carbon::parse($res->Check_In_Date)->format('M d, Y') }}</div>
+                    </td>
+                    <td style="text-align:center;">
+                        <div class="res-date-label">Check-Out</div>
+                        <div class="res-date">{{ \Carbon\Carbon::parse($res->Check_Out_Date)->format('M d, Y') }}</div>
+                    </td>
+                    <td style="text-align:center;">
+                        <span class="status-badge status-{{ $res->Status }}">{{ $res->Status }}</span>
+                    </td>
+                    {{-- Payment Status --}}
+                    <td style="text-align:center;">
+                        @php $ps = $res->Payment_Status ?? '50% Deposit'; @endphp
+                        @if($ps === 'Fully Paid')
+                            <span style="display:inline-flex;align-items:center;gap:5px;background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:20px;padding:5px 12px;font-size:11.5px;font-weight:700;">
+                                <i class="fa-solid fa-circle-check" style="font-size:10px;"></i> Fully Paid
+                            </span>
+                        @else
+                            <span style="display:inline-flex;align-items:center;gap:5px;background:#fef9c3;color:#854d0e;border:1px solid #fde047;border-radius:20px;padding:5px 12px;font-size:11.5px;font-weight:700;">
+                                <i class="fa-solid fa-clock" style="font-size:10px;"></i> 50% Deposit
+                            </span>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="res-actions">
+                            @if($res->Receipt_Image)
+                                <a href="#" class="res-btn-receipt" onclick="openReceipt('{{ asset(ltrim($res->Receipt_Image, '/')) }}'); return false;">
+                                    <i class="fa-solid fa-image"></i> View Receipt
+                                </a>
+                            @endif
+                            @if($res->Status == 'Pending')
+                                <div class="res-btn-row">
+                                    <form action="/staff/update-reservation/{{ $res->RESERVATION_ID }}" method="POST" style="flex:1;margin:0;">
+                                        @csrf
+                                        <input type="hidden" name="status" value="Confirmed">
+                                        <button type="submit" class="res-btn-confirm">
+                                            <i class="fa-solid fa-check"></i> Confirm
+                                        </button>
+                                    </form>
+                                    <form action="/staff/update-reservation/{{ $res->RESERVATION_ID }}" method="POST" style="flex:1;margin:0;">
+                                        @csrf
+                                        <input type="hidden" name="status" value="Cancelled">
+                                        <button type="submit" class="res-btn-cancel" onclick="return confirm('Cancel this booking? The room will be freed up.');">
+                                            <i class="fa-solid fa-xmark"></i> Cancel
+                                        </button>
+                                    </form>
+                                </div>
+                            @elseif($res->Status == 'Confirmed' || $res->Status == 'Booked')
+                                @if(($res->Payment_Status ?? '50% Deposit') !== 'Fully Paid')
+                                    <form action="/staff/mark-fully-paid/{{ $res->RESERVATION_ID }}" method="POST" style="width:100%;margin:0 0 6px;">
+                                        @csrf
+                                        <button type="submit" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:5px;background:#f0fdf4;color:#166534;border:1px solid #86efac;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;" onclick="return confirm('Mark this reservation as Fully Paid?');">
+                                            <i class="fa-solid fa-peso-sign" style="font-size:10px;"></i> Mark Fully Paid
+                                        </button>
+                                    </form>
+                                    <span style="color:#94a3b8;font-size:11.5px;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                                        <i class="fa-solid fa-lock" style="font-size:10px;"></i> Pay balance to check out
+                                    </span>
+                                @else
+                                    <form action="/staff/checkout/{{ $res->RESERVATION_ID }}" method="POST" style="width:100%;margin:0;">
+                                        @csrf
+                                        <button type="submit" class="res-btn-checkout" onclick="return confirm('Check out {{ $res->First_Name }} {{ $res->Last_Name }}? Room will be set to Needs Cleaning.');">
+                                            <i class="fa-solid fa-door-open"></i> Check Out
+                                        </button>
+                                    </form>
+                                @endif
+                            @elseif($res->Status == 'Checked Out')
+                                <span class="res-checked-out"><i class="fa-solid fa-circle-check"></i> Checked Out</span>
+                            @else
+                                <span class="res-no-action">—</span>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" style="text-align: center; color: #94a3b8; padding: 30px;">No reservations found.</td>
+                    <td colspan="10" style="text-align:center; color:#94a3b8; padding:40px; font-size:14px;">
+                        <i class="fa-solid fa-calendar-xmark" style="font-size:24px; display:block; margin-bottom:8px; color:#cbd5e1;"></i>
+                        No reservations found.
+                    </td>
                 </tr>
                 @endforelse
             </tbody>
@@ -248,6 +432,56 @@
         {{ $reservations->links() }}
     </div>
 </div>
+{{-- Receipt Image Modal --}}
+<div id="receiptModal" onclick="closeReceipt(event)" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+">
+    <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+        <button onclick="document.getElementById('receiptModal').style.display='none'" style="
+            position: absolute;
+            top: -14px;
+            right: -14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            line-height: 1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 1;
+        ">&times;</button>
+        <img id="receiptImg" src="" alt="Payment Receipt" style="
+            max-width: 90vw;
+            max-height: 85vh;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            display: block;
+        ">
+    </div>
+</div>
+
+<script>
+function openReceipt(url) {
+    document.getElementById('receiptImg').src = url;
+    document.getElementById('receiptModal').style.display = 'flex';
+}
+function closeReceipt(e) {
+    if (e.target === document.getElementById('receiptModal')) {
+        document.getElementById('receiptModal').style.display = 'none';
+    }
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') document.getElementById('receiptModal').style.display = 'none';
+});
+</script>
 
 </body>
 </html>

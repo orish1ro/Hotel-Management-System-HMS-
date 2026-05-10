@@ -9,19 +9,19 @@ class Message extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'message_id';
+    protected $table = 'messages';
+    protected $primaryKey = 'MESSAGE_ID';
 
     protected $fillable = [
-        'guest_id',
-        'staff_id',
-        'sender_type',
-        'message_text',
-        'status'
+        'GUEST_ID',
+        'STAFF_ID',
+        'Message_Text',
+        'Admin_Reply',
+        'Status',
     ];
 
-    // This allows the Staff Dashboard to get the Guest's name automatically
     public function guest()
     {
-        return $this->belongsTo(Guest::class, 'guest_id', 'GUEST_ID'); 
+        return $this->belongsTo(Guest::class, 'GUEST_ID', 'GUEST_ID');
     }
 }

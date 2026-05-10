@@ -209,7 +209,129 @@
         .flash-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .flash-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 
-        .pagination-info {
+        .rooms-filter-bar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 22px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .filter-group label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #9ca3af;
+        }
+        .filter-group select,
+        .filter-group input[type="number"] {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1f2937;
+            background: #f9fafb;
+            outline: none;
+            transition: border-color 0.15s;
+            height: 36px;
+        }
+        .filter-group select { min-width: 150px; cursor: pointer; }
+        .filter-group input[type="number"] { width: 90px; }
+        .filter-group select:focus,
+        .filter-group input:focus { border-color: #003366; background: #fff; }
+
+        .filter-divider {
+            width: 1px;
+            height: 36px;
+            background: #e5e7eb;
+            flex-shrink: 0;
+        }
+        .filter-price-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filter-price-row span {
+            font-size: 12px;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        .filter-toggle {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            user-select: none;
+        }
+        .filter-toggle input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #003366;
+            cursor: pointer;
+        }
+
+        .filter-apply-btn {
+            background: #003366;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0 20px;
+            height: 36px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            white-space: nowrap;
+            margin-left: auto;
+        }
+        .filter-apply-btn:hover { background: #002244; transform: translateY(-1px); }
+
+        .filter-clear-btn {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-decoration: none;
+            padding: 0 8px;
+            transition: color 0.15s;
+            white-space: nowrap;
+        }
+        .filter-clear-btn:hover { color: #ef4444; }
+
+        .results-info {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .results-info strong { color: #1a3c6e; }
+        .active-filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #1d4ed8;
+        }
             text-align: center;
             font-size: 13px;
             color: var(--text-muted, #6b7280);
@@ -268,8 +390,83 @@
 
         <div class="rooms-title-sectiontext">
             <h1>Our Rooms</h1>
-            <p>Find the perfect room for your stay.</p>
+            @if(request('checkin') && request('checkout'))
+                <p>Showing available rooms from <strong>{{ \Carbon\Carbon::parse(request('checkin'))->format('M d, Y') }}</strong> to <strong>{{ \Carbon\Carbon::parse(request('checkout'))->format('M d, Y') }}</strong>
+                &nbsp;·&nbsp; <a href="/rooms" style="color:#e8a000;font-weight:600;text-decoration:none;">Clear filter</a></p>
+            @else
+                <p>Find the perfect room for your stay.</p>
+            @endif
         </div>
+
+        {{-- Filter Bar --}}
+        <form method="GET" action="/rooms" class="rooms-filter-bar">
+            {{-- Preserve date params --}}
+            @if(request('checkin'))  <input type="hidden" name="checkin"  value="{{ request('checkin') }}"> @endif
+            @if(request('checkout')) <input type="hidden" name="checkout" value="{{ request('checkout') }}"> @endif
+            @if(request('guests'))   <input type="hidden" name="guests"   value="{{ request('guests') }}"> @endif
+
+            {{-- Room Type --}}
+            <div class="filter-group">
+                <label>Room Type</label>
+                <select name="type">
+                    <option value="">All Types</option>
+                    @foreach($roomTypes as $type)
+                        <option value="{{ $type }}" {{ request('type') == $type ? 'selected' : '' }}>{{ $type }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-divider"></div>
+
+            {{-- Price Range --}}
+            <div class="filter-group">
+                <label>Price Range (₱/night)</label>
+                <div class="filter-price-row">
+                    <input type="number" name="min_price" placeholder="Min" min="0" value="{{ request('min_price') }}">
+                    <span>—</span>
+                    <input type="number" name="max_price" placeholder="Max" min="0" value="{{ request('max_price') }}">
+                </div>
+            </div>
+
+            <div class="filter-divider"></div>
+
+            {{-- Sort --}}
+            <div class="filter-group">
+                <label>Sort By</label>
+                <select name="sort">
+                    <option value="">Default</option>
+                    <option value="price_asc"  {{ request('sort') == 'price_asc'  ? 'selected' : '' }}>Price: Low → High</option>
+                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Price: High → Low</option>
+                    <option value="type_asc"   {{ request('sort') == 'type_asc'   ? 'selected' : '' }}>Room Type A → Z</option>
+                </select>
+            </div>
+
+            <div class="filter-divider"></div>
+
+            {{-- Available Only --}}
+            <label class="filter-toggle">
+                <input type="checkbox" name="available_only" value="1" {{ request('available_only') || (request('checkin') && request('checkout')) ? 'checked' : '' }}>
+                Available Only
+            </label>
+
+            <button type="submit" class="filter-apply-btn"><i class="fa-solid fa-sliders"></i> Apply</button>
+
+            @if(request('type') || request('min_price') || request('max_price') || request('sort') || request('available_only'))
+                <a href="/rooms{{ request('checkin') ? '?checkin='.request('checkin').'&checkout='.request('checkout').'&guests='.request('guests') : '' }}" class="filter-clear-btn">✕ Clear</a>
+            @endif
+        </form>
+
+        {{-- Results info --}}
+        @if(request('type') || request('min_price') || request('max_price') || request('sort') || request('available_only') || (request('checkin') && request('checkout')))
+        <div class="results-info">
+            <strong>{{ $rooms->total() }} room{{ $rooms->total() != 1 ? 's' : '' }}</strong> found
+            @if(request('type')) <span class="active-filter-tag">{{ request('type') }}</span> @endif
+            @if(request('available_only')) <span class="active-filter-tag">Available Only</span> @endif
+            @if(request('sort') == 'price_asc') <span class="active-filter-tag">Price ↑</span> @endif
+            @if(request('sort') == 'price_desc') <span class="active-filter-tag">Price ↓</span> @endif
+            @if(request('min_price') || request('max_price')) <span class="active-filter-tag">₱{{ request('min_price','0') }} – ₱{{ request('max_price','∞') }}</span> @endif
+        </div>
+        @endif
 
         @if(session('error'))
             <div class="flash-msg flash-error">⚠️ {{ session('error') }}</div>
@@ -327,7 +524,7 @@
                 <div class="room-card-footer">
                     @if($room->Status == 'Available')
                         @if(session()->has('guest_id'))
-                            <a href="/book/{{ $room->ROOM_ID }}" class="btn-book">Book Now</a>
+                            <a href="/book/{{ $room->ROOM_ID }}?checkin={{ request('checkin') }}&checkout={{ request('checkout') }}&guests={{ request('guests') }}" class="btn-book">Book Now</a>
                         @else
                             <a href="/login" class="btn-book">Book Now</a>
                         @endif
@@ -340,7 +537,9 @@
             </div>
             @empty
                 <div style="grid-column:1/-1;text-align:center;padding:40px;">
-                    <h3 style="color:var(--text-muted,#6b7280);font-size:15px;">No rooms are available at the moment.</h3>
+                    <i class="fa-solid fa-door-closed" style="font-size:32px;color:#e5e7eb;margin-bottom:12px;display:block;"></i>
+                    <h3 style="color:#6b7280;font-size:15px;margin-bottom:6px;">No rooms found</h3>
+                    <p style="font-size:13px;color:#9ca3af;">Try adjusting your filters or <a href="/rooms" style="color:#e8a000;font-weight:600;">view all rooms</a>.</p>
                 </div>
             @endforelse
         </div>

@@ -21,6 +21,7 @@ return new class extends Migration
                 $table->decimal('Amount', 10, 2);
                 $table->datetime('Payment_Date')->useCurrent();
                 $table->string('Payment_Method', 50)->nullable();
+                $table->string('Receipt_Image', 255)->nullable();
                 
                 $table->timestamps();
 

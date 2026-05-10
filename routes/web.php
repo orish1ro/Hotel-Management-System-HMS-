@@ -24,9 +24,61 @@ Route::get('/signup', function () {
     return view('guest.signup');
 });
 
-Route::get('/rooms', function () {
-    $rooms = DB::table('room')->paginate(8);
-    return view('guest.rooms', ['rooms' => $rooms]);
+Route::get('/rooms', function (Request $request) {
+    $checkin        = $request->checkin;
+    $checkout       = $request->checkout;
+    $guests         = $request->guests;
+    $type           = $request->type;
+    $minPrice       = $request->min_price;
+    $maxPrice       = $request->max_price;
+    $sort           = $request->sort;
+    $availableOnly  = $request->available_only;
+
+    $query = DB::table('room');
+
+    // Date-based availability filter
+    if ($checkin && $checkout) {
+        $bookedRoomIds = DB::table('reservation')
+            ->whereIn('Status', ['Pending', 'Confirmed', 'Booked'])
+            ->where('Check_In_Date', '<', $checkout)
+            ->where('Check_Out_Date', '>', $checkin)
+            ->pluck('ROOM_ID');
+
+        $query->whereNotIn('ROOM_ID', $bookedRoomIds)
+              ->where('Status', 'Available');
+    } elseif ($availableOnly) {
+        $query->where('Status', 'Available');
+    }
+
+    // Room type filter
+    if ($type) {
+        $query->where('Room_Type', $type);
+    }
+
+    // Price range filter
+    if ($minPrice !== null && $minPrice !== '') {
+        $query->where('Price_Per_Night', '>=', $minPrice);
+    }
+    if ($maxPrice !== null && $maxPrice !== '') {
+        $query->where('Price_Per_Night', '<=', $maxPrice);
+    }
+
+    // Sorting
+    if ($sort === 'price_asc')       $query->orderBy('Price_Per_Night', 'asc');
+    elseif ($sort === 'price_desc')  $query->orderBy('Price_Per_Night', 'desc');
+    elseif ($sort === 'type_asc')    $query->orderBy('Room_Type', 'asc');
+    else                             $query->orderBy('ROOM_ID', 'asc');
+
+    $rooms     = $query->paginate(8)->appends($request->query());
+    $roomTypes = DB::table('room')->distinct()->pluck('Room_Type');
+
+    return view('guest.rooms', [
+        'rooms'     => $rooms,
+        'roomTypes' => $roomTypes,
+        'checkin'   => $checkin,
+        'checkout'  => $checkout,
+        'guests'    => $guests,
+    ]);
 });
 
 Route::get('/reservations', function () {
@@ -36,16 +88,39 @@ Route::get('/reservations', function () {
 
     $reservations = DB::table('reservation')
         ->join('room', 'reservation.ROOM_ID', '=', 'room.ROOM_ID')
-        ->leftJoin('payment', 'reservation.RESERVATION_ID', '=', 'payment.RESERVATION_ID')
+        ->leftJoinSub(
+            DB::table('payment')
+                ->select(
+                    'RESERVATION_ID',
+                    DB::raw('MIN(PAYMENT_ID) as PAYMENT_ID'),
+                    DB::raw('MAX(Payment_Status) as Payment_Status')
+                )
+                ->groupBy('RESERVATION_ID'),
+            'payment', 'payment.RESERVATION_ID', '=', 'reservation.RESERVATION_ID'
+        )
         ->where('reservation.GUEST_ID', session('guest_id'))
+        ->when(request('status') && request('status') !== 'all', function($q) {
+            $q->where('reservation.Status', request('status'));
+        })
         ->select(
             'reservation.*',
             'room.Room_Type',
+            'room.Room_Number',
             'room.Picture_Url',
-            'payment.PAYMENT_ID'
+            'payment.PAYMENT_ID',
+            'payment.Payment_Status'
         )
         ->orderBy('reservation.RESERVATION_ID', 'desc')
-        ->get();
+        ->paginate(5);
+
+    // Load services for each reservation
+    foreach ($reservations as $res) {
+        $res->services = DB::table('reservation_services')
+            ->join('services', 'reservation_services.SERVICES_ID', '=', 'services.SERVICES_ID')
+            ->where('reservation_services.RESERVATION_ID', $res->RESERVATION_ID)
+            ->select('services.*', 'reservation_services.Quantity')
+            ->get();
+    }
 
     return view('guest.reservations', ['reservations' => $reservations]);
 });
@@ -102,7 +177,8 @@ Route::get('/book/{id}', function ($id) {
         return redirect('/rooms')->with('error', 'Sorry, we could not find that room.');
     }
 
-    return view('guest.book', ['room' => $room]);
+    $guest = DB::table('guest')->where('GUEST_ID', session('guest_id'))->first();
+    return view('guest.book', ['room' => $room, 'guest' => $guest]);
 });
 
 Route::post('/payment-process', function (Request $request) {
@@ -122,8 +198,8 @@ Route::post('/payment-process', function (Request $request) {
 
     $roomCharges   = $room->Price_Per_Night * $request->nights;
     $servicesTotal = floatval($request->services_total ?? 0);
-    $subtotal      = $roomCharges + $servicesTotal;
-    $finalAmount   = $subtotal + ($subtotal * 0.12);
+    $grandTotal    = $roomCharges + $servicesTotal;
+    $finalAmount   = $grandTotal * 0.50; // 50% deposit only
 
     // Fetch selected service names for display on payment page
     $selectedServiceIds = $request->services ?? [];
@@ -151,6 +227,15 @@ Route::post('/payment-process', function (Request $request) {
 
 Route::post('/book-final-submit', function (Request $request) {
 
+    // 0. Handle receipt image upload
+    $receiptPath = null;
+    if ($request->hasFile('receipt_image')) {
+        $file = $request->file('receipt_image');
+        $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+        $file->move(public_path('images/receipts'), $filename);
+        $receiptPath = '/images/receipts/' . $filename;
+    }
+
     // 1. Save the reservation as Pending and get the new ID
     $reservationId = DB::table('reservation')->insertGetId([
         'GUEST_ID'       => session('guest_id'),
@@ -167,6 +252,7 @@ Route::post('/book-final-submit', function (Request $request) {
         'Amount'         => $request->amount,
         'Payment_Method' => $request->payment_method,
         'Payment_Date'   => now(),
+        'Receipt_Image'  => $receiptPath,
     ]);
 
     // 3. Save selected add-on services
@@ -207,6 +293,31 @@ Route::get('/receipt/{id}', function ($id) {
     return view('guest.receipt', ['data' => $receiptData]);
 });
 
+Route::post('/reservations/cancel/{id}', function ($id) {
+    if (!session()->has('guest_id')) return redirect('/login');
+
+    // Get the reservation to find the room
+    $reservation = DB::table('reservation')
+        ->where('RESERVATION_ID', $id)
+        ->where('GUEST_ID', session('guest_id'))
+        ->where('Status', 'Pending')
+        ->first();
+
+    if ($reservation) {
+        // Cancel the reservation
+        DB::table('reservation')
+            ->where('RESERVATION_ID', $id)
+            ->update(['Status' => 'Cancelled']);
+
+        // Free up the room
+        DB::table('room')
+            ->where('ROOM_ID', $reservation->ROOM_ID)
+            ->update(['Status' => 'Available']);
+    }
+
+    return redirect('/reservations')->with('success', 'Your reservation has been cancelled. The room has been released.');
+});
+
 // ==========================================
 // LOGOUT ROUTES
 // ==========================================
@@ -233,6 +344,7 @@ Route::get('/staff/dashboard',      [StaffController::class, 'dashboard']);
 Route::get('/staff/reservations',              [StaffController::class, 'reservations']);
 Route::post('/staff/update-reservation/{id}',  [StaffController::class, 'updateReservation']);
 Route::post('/staff/checkout/{id}',            [StaffController::class, 'checkOutGuest']);
+Route::post('/staff/mark-fully-paid/{id}',     [StaffController::class, 'markFullyPaid']);
 
 Route::get('/staff/rooms',                     [StaffController::class, 'rooms']);
 Route::get('/staff/add-room',                  [StaffController::class, 'addRoomPage']);

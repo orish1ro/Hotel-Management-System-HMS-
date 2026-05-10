@@ -42,16 +42,39 @@ class GuestController extends Controller
 
         $reservations = DB::table('reservation')
             ->join('room', 'reservation.ROOM_ID', '=', 'room.ROOM_ID')
-            ->leftJoin('payment', 'reservation.RESERVATION_ID', '=', 'payment.RESERVATION_ID')
+            ->leftJoinSub(
+                DB::table('payment')
+                    ->select(
+                        'RESERVATION_ID',
+                        DB::raw('MIN(PAYMENT_ID) as PAYMENT_ID'),
+                        DB::raw('MAX(Payment_Status) as Payment_Status')
+                    )
+                    ->groupBy('RESERVATION_ID'),
+                'payment', 'payment.RESERVATION_ID', '=', 'reservation.RESERVATION_ID'
+            )
             ->where('reservation.GUEST_ID', session('guest_id'))
+            ->when(request('status') && request('status') !== 'all', function($q) {
+                $q->where('reservation.Status', request('status'));
+            })
             ->select(
                 'reservation.*',
                 'room.Room_Type',
+                'room.Room_Number',
                 'room.Picture_Url',
-                'payment.PAYMENT_ID'
+                'payment.PAYMENT_ID',
+                'payment.Payment_Status'
             )
             ->orderBy('reservation.RESERVATION_ID', 'desc')
-            ->get();
+            ->paginate(5);
+
+        // Load services for each reservation
+        foreach ($reservations as $res) {
+            $res->services = DB::table('reservation_services')
+                ->join('services', 'reservation_services.SERVICES_ID', '=', 'services.SERVICES_ID')
+                ->where('reservation_services.RESERVATION_ID', $res->RESERVATION_ID)
+                ->select('services.*', 'reservation_services.Quantity')
+                ->get();
+        }
 
         return view('guest.reservations', ['reservations' => $reservations]);
     }
@@ -159,6 +182,21 @@ class GuestController extends Controller
 
     public function bookFinalSubmit(Request $request)
     {
+        $request->validate([
+            'room_id'        => 'required',
+            'check_in'       => 'required|date',
+            'check_out'      => 'required|date|after:check_in',
+            'amount'         => 'required|numeric',
+            'payment_method' => 'required',
+            'receipt_image'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
+        // Store the uploaded receipt image if provided
+        $receiptPath = null;
+        if ($request->hasFile('receipt_image')) {
+            $receiptPath = $request->file('receipt_image')->store('receipts', 'public');
+        }
+
         $reservationId = DB::table('reservation')->insertGetId([
             'GUEST_ID'         => session('guest_id'),
             'ROOM_ID'          => $request->room_id,
@@ -176,11 +214,35 @@ class GuestController extends Controller
             'Amount'         => $request->amount,
             'Payment_Date'   => \Carbon\Carbon::now(),
             'Payment_Method' => $request->payment_method,
+            'Receipt_Image'  => $receiptPath,
             'created_at'     => \Carbon\Carbon::now(),
             'updated_at'     => \Carbon\Carbon::now(),
         ]);
 
         return redirect('/receipt/' . $reservationId)->with('success', 'Booking request submitted! Please wait for staff confirmation.');
+    }
+
+    public function cancelReservation($id)
+    {
+        if (!session()->has('guest_id')) return redirect('/login');
+
+        $reservation = DB::table('reservation')
+            ->where('RESERVATION_ID', $id)
+            ->where('GUEST_ID', session('guest_id'))
+            ->where('Status', 'Pending')
+            ->first();
+
+        if ($reservation) {
+            DB::table('reservation')
+                ->where('RESERVATION_ID', $id)
+                ->update(['Status' => 'Cancelled']);
+
+            DB::table('room')
+                ->where('ROOM_ID', $reservation->ROOM_ID)
+                ->update(['Status' => 'Available']);
+        }
+
+        return redirect('/reservations')->with('success', 'Your reservation has been cancelled. The room has been released.');
     }
 
     public function receipt($id)

@@ -16,10 +16,13 @@
     @include('staff.sidebar')
 @endif
 
-    <div class="container rooms-container">
+    <div class="container rooms-container" style="overflow-y: auto;">
 
         <div class="header-flex" style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
             <h3 class="section-title" style="margin:0;"><i class="fa-solid fa-bed"></i> Room Status</h3>
+            <span style="font-size:13px; color:#94a3b8; font-weight:600;">
+                Showing {{ $rooms->firstItem() }}–{{ $rooms->lastItem() }} of {{ $rooms->total() }} rooms
+            </span>
         </div>
 
         {{-- Filter Buttons --}}
@@ -87,8 +90,13 @@
                 @endforeach
             </div>
 
-            <div class="pagination-wrapper" style="margin-top: 20px; margin-bottom: 30px;">
-                {{ $rooms->links() }}
+            <div style="margin-top: 24px; margin-bottom: 30px; display:flex; justify-content:space-between; align-items:center; padding: 16px 4px; border-top: 1px solid #e2e8f0;">
+                <span style="font-size:13px; color:#64748b; font-weight:500;">
+                    Page {{ $rooms->currentPage() }} of {{ $rooms->lastPage() }}
+                </span>
+                <div class="pagination-wrapper">
+                    {{ $rooms->links() }}
+                </div>
             </div>
         </div>
     </div>

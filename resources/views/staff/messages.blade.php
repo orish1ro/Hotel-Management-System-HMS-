@@ -179,11 +179,7 @@
 @if(session('staff_role') === 'Admin')
 @include('staff.admin-sidebar')
 @else
-@if(session('staff_role') === 'Admin')
-@include('staff.admin-sidebar')
-@else
 @include('staff.sidebar')
-@endif
 @endif
 
 <div class="messages-wrapper">
@@ -262,7 +258,8 @@
                 history.innerHTML = '';
 
                 messages.forEach(msg => {
-                    const isStaff  = msg.sender_type === 'Staff';
+                    // STAFF_ID being set means it's a staff message; otherwise it's a guest message
+                    const isStaff  = msg.STAFF_ID !== null && msg.STAFF_ID !== undefined;
                     const align    = isStaff ? 'align-items:flex-end' : 'align-items:flex-start';
                     const bubbleBg = isStaff
                         ? 'background:#003366;color:white;'
@@ -276,7 +273,7 @@
                         <div style="display:flex;flex-direction:column;${align}">
                             <span style="font-size:11px;color:#94a3b8;margin-bottom:4px;">${label}</span>
                             <div style="${bubbleBg}padding:12px 16px;border-radius:16px;${radius}max-width:70%;font-size:14px;line-height:1.5;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
-                                ${msg.message_text}
+                                ${msg.Message_Text}
                             </div>
                         </div>
                     `;

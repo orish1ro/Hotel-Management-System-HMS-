@@ -198,7 +198,18 @@ class StaffController extends Controller
         $reservations = DB::table('reservation')
             ->join('guest', 'reservation.GUEST_ID', '=', 'guest.GUEST_ID')
             ->join('room', 'reservation.ROOM_ID', '=', 'room.ROOM_ID')
-            ->leftJoin('payment', 'payment.RESERVATION_ID', '=', 'reservation.RESERVATION_ID')
+            ->leftJoinSub(
+                DB::table('payment')
+                    ->select('RESERVATION_ID',
+                        DB::raw('MIN(PAYMENT_ID) as PAYMENT_ID'),
+                        DB::raw('MIN(Amount) as Amount'),
+                        DB::raw('MAX(Payment_Status) as Payment_Status'),
+                        DB::raw('MIN(Payment_Method) as Payment_Method'),
+                        DB::raw('MIN(Receipt_Image) as Receipt_Image')
+                    )
+                    ->groupBy('RESERVATION_ID'),
+                'payment', 'payment.RESERVATION_ID', '=', 'reservation.RESERVATION_ID'
+            )
             ->select(
                 'reservation.RESERVATION_ID',
                 'reservation.Status',
@@ -210,7 +221,9 @@ class StaffController extends Controller
                 'room.Room_Type',
                 'room.Room_Number',
                 'payment.Payment_Method',
-                'payment.Amount as Amount_Paid'
+                'payment.Amount as Amount_Paid',
+                'payment.Receipt_Image',
+                'payment.Payment_Status'
             )
             ->orderBy('reservation.RESERVATION_ID', 'desc')
             ->paginate(7);
@@ -303,6 +316,24 @@ class StaffController extends Controller
             ->where('RESERVATION_ID', $id)
             ->update(['Status' => 'Checked Out']);
 
+        // If not already fully paid, insert the balance payment and mark as fully paid
+        $payment = DB::table('payment')->where('RESERVATION_ID', $id)->first();
+        if ($payment && ($payment->Payment_Status ?? '50% Deposit') !== 'Fully Paid') {
+            DB::table('payment')->insert([
+                'RESERVATION_ID' => $id,
+                'STAFF_ID'       => session('staff_id'),
+                'Amount'         => $payment->Amount,
+                'Payment_Method' => $payment->Payment_Method,
+                'Payment_Date'   => now(),
+                'Payment_Status' => 'Fully Paid',
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
+        }
+        DB::table('payment')
+            ->where('RESERVATION_ID', $id)
+            ->update(['Payment_Status' => 'Fully Paid', 'updated_at' => now()]);
+
         DB::table('room')
             ->where('ROOM_ID', $reservation->ROOM_ID)
             ->update([
@@ -312,6 +343,35 @@ class StaffController extends Controller
             ]);
 
         return redirect('/staff/reservations')->with('success', 'Guest checked out. Room #' . $reservation->ROOM_ID . ' is now set to Needs Cleaning.');
+    }
+
+    public function markFullyPaid($id)
+    {
+        if (!session()->has('staff_id')) return redirect('/staff/login');
+
+        // Get the original deposit amount
+        $payment = DB::table('payment')->where('RESERVATION_ID', $id)->first();
+
+        if ($payment) {
+            // Insert the balance payment (same amount as the deposit = remaining 50%)
+            DB::table('payment')->insert([
+                'RESERVATION_ID' => $id,
+                'STAFF_ID'       => session('staff_id'),
+                'Amount'         => $payment->Amount,
+                'Payment_Method' => $payment->Payment_Method,
+                'Payment_Date'   => now(),
+                'Payment_Status' => 'Fully Paid',
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
+
+            // Mark the original deposit record as Fully Paid too
+            DB::table('payment')
+                ->where('PAYMENT_ID', $payment->PAYMENT_ID)
+                ->update(['Payment_Status' => 'Fully Paid', 'updated_at' => now()]);
+        }
+
+        return redirect('/staff/reservations')->with('success', 'Reservation #' . str_pad($id, 4, '0', STR_PAD_LEFT) . ' marked as Fully Paid. Balance added to revenue.');
     }
 
     // ==========================================

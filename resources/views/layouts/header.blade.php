@@ -93,7 +93,129 @@
         background: #e0a800; /* Darker gold on hover */
     }
 
-    /* --- NAVIGATION --- */
+    /* --- GREETING --- */
+    .guest-greeting {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.85);
+        white-space: nowrap;
+    }
+    .guest-greeting .avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        border: 1.5px solid rgba(255,255,255,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    /* --- NOTIFICATION BELL --- */
+    .notif-bell {
+        position: relative;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 4px;
+        color: rgba(255,255,255,0.75);
+        font-size: 15px;
+        text-decoration: none;
+        transition: color 0.2s, background 0.2s;
+        display: flex;
+        align-items: center;
+    }
+    .notif-bell:hover { color: #fff; background: rgba(255,255,255,0.12); }
+    .notif-dot {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        width: 8px;
+        height: 8px;
+        background: #ffc107;
+        border-radius: 50%;
+        border: 1.5px solid #003366;
+    }
+
+    /* --- DROPDOWN --- */
+    .notif-wrapper { position: relative; }
+    .notif-dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        width: 300px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        border: 1px solid #e5e7eb;
+        z-index: 9999;
+        overflow: hidden;
+        padding: 6px 0;
+    }
+    .notif-dropdown.open { display: block; }
+    .notif-dropdown-header {
+        padding: 14px 18px 10px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #6b7280;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .notif-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 13px 18px;
+        border-bottom: 1px solid #f9fafb;
+        text-decoration: none;
+        transition: background 0.15s;
+    }
+    .notif-item:hover { background: #f9fafb; }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+    .notif-icon.pending  { background: #fef9c3; color: #ca8a04; }
+    .notif-icon.confirmed { background: #dcfce7; color: #16a34a; }
+    .notif-icon.cancelled { background: #fee2e2; color: #dc2626; }
+    .notif-icon.checked  { background: #eff6ff; color: #2563eb; }
+    .notif-text { flex: 1; }
+    .notif-text strong { font-size: 12.5px; font-weight: 700; color: #1f2937; display: block; }
+    .notif-text span { font-size: 11px; color: #9ca3af; }
+    .notif-empty {
+        padding: 20px 16px;
+        text-align: center;
+        font-size: 12px;
+        color: #9ca3af;
+    }
+    .notif-footer {
+        padding: 12px 18px;
+        border-top: 1px solid #f3f4f6;
+        text-align: center;
+    }
+    .notif-footer a {
+        font-size: 12px;
+        font-weight: 600;
+        color: #003366;
+        text-decoration: none;
+    }
+    .notif-footer a:hover { text-decoration: underline; }
     .guest-header nav {
         display: flex;
         align-items: center;
@@ -176,37 +298,81 @@
 <header class="guest-header">
     <a href="/" class="logo-text">Ragadio Plaza Hotel</a>
 
-    <form action="/rooms" method="GET" class="header-booking-widget">
-        <div class="widget-field">
-            <label>Check-in</label>
-            <input type="date" name="checkin" required>
-        </div>
-        
-        <div class="widget-field divider"></div>
-        
-        <div class="widget-field">
-            <label>Check-out</label>
-            <input type="date" name="checkout" required>
-        </div>
-        
-        <div class="widget-field divider"></div>
-        
-        <div class="widget-field">
-            <label>Guests</label>
-            <input type="number" name="guests" min="1" value="2" required>
-        </div>
-        
-        <button type="submit" class="check-btn">Check</button>
-    </form>
-
     <nav>
         <a href="/"              class="{{ Request::is('/')              ? 'active' : '' }}">Home</a>
         <a href="/rooms"         class="{{ Request::is('rooms*')         ? 'active' : '' }}">Rooms</a>
         <a href="/reservations"  class="{{ Request::is('reservations*')  ? 'active' : '' }}">Reservations</a>
+
         @if(session()->has('guest_id'))
+            @php
+                $headerGuest = DB::table('guest')->where('GUEST_ID', session('guest_id'))->first();
+                $pendingCount = DB::table('reservation')
+                    ->where('GUEST_ID', session('guest_id'))
+                    ->whereIn('Status', ['Pending', 'Confirmed'])
+                    ->count();
+                $recentReservations = DB::table('reservation')
+                    ->join('room', 'reservation.ROOM_ID', '=', 'room.ROOM_ID')
+                    ->where('reservation.GUEST_ID', session('guest_id'))
+                    ->orderBy('reservation.RESERVATION_ID', 'desc')
+                    ->limit(5)
+                    ->select('reservation.*', 'room.Room_Type')
+                    ->get();
+            @endphp
+
+            {{-- Greeting --}}
+            <div class="guest-greeting">
+                <div class="avatar">{{ strtoupper(substr($headerGuest->First_Name ?? 'G', 0, 1)) }}</div>
+                Hi, {{ $headerGuest->First_Name ?? 'Guest' }}!
+            </div>
+
+            {{-- Notification Bell --}}
+            <div class="notif-wrapper">
+                <a class="notif-bell" id="notifBell" onclick="toggleNotif(event)">
+                    <i class="fa-solid fa-bell"></i>
+                    @if($pendingCount > 0)
+                        <span class="notif-dot"></span>
+                    @endif
+                </a>
+                <div class="notif-dropdown" id="notifDropdown">
+                    <div class="notif-dropdown-header">Reservation Updates</div>
+                    @forelse($recentReservations as $notif)
+                        <a href="/reservations" class="notif-item">
+                            <div class="notif-icon {{ strtolower($notif->Status) }}">
+                                @if($notif->Status == 'Pending') <i class="fa-solid fa-clock"></i>
+                                @elseif($notif->Status == 'Confirmed') <i class="fa-solid fa-circle-check"></i>
+                                @elseif($notif->Status == 'Cancelled') <i class="fa-solid fa-circle-xmark"></i>
+                                @else <i class="fa-solid fa-door-open"></i>
+                                @endif
+                            </div>
+                            <div class="notif-text">
+                                <strong>{{ $notif->Room_Type }}</strong>
+                                <span>{{ $notif->Status }} · {{ \Carbon\Carbon::parse($notif->Check_In_Date)->format('M d') }} – {{ \Carbon\Carbon::parse($notif->Check_Out_Date)->format('M d, Y') }}</span>
+                            </div>
+                        </a>
+                    @empty
+                        <div class="notif-empty">No reservations yet.</div>
+                    @endforelse
+                    <div class="notif-footer"><a href="/reservations">View all reservations →</a></div>
+                </div>
+            </div>
+
             <a href="/logout">Logout</a>
         @else
             <a href="/login" class="{{ Request::is('login') ? 'active' : '' }}">Login</a>
         @endif
     </nav>
 </header>
+
+<script>
+function toggleNotif(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('notifDropdown').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+    const wrapper = document.querySelector('.notif-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('notifDropdown')?.classList.remove('open');
+    }
+});
+</script>

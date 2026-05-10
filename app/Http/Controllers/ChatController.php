@@ -18,11 +18,10 @@ class ChatController extends Controller
         }
 
         $chatMessage = new Message();
-        $chatMessage->guest_id     = session('guest_id');
-        $chatMessage->staff_id     = null;
-        $chatMessage->sender_type  = 'Guest';
-        $chatMessage->message_text = $request->message;
-        $chatMessage->status       = 'Sent';
+        $chatMessage->GUEST_ID     = session('guest_id');
+        $chatMessage->STAFF_ID     = null;
+        $chatMessage->Message_Text = $request->message;
+        $chatMessage->Status       = 'Unread';
         $chatMessage->save();
 
         return response()->json(['success' => true]);
@@ -34,7 +33,7 @@ class ChatController extends Controller
             return response()->json([]);
         }
 
-        $messages = Message::where('guest_id', session('guest_id'))
+        $messages = Message::where('GUEST_ID', session('guest_id'))
                     ->orderBy('created_at', 'asc')
                     ->get();
 
@@ -51,9 +50,9 @@ class ChatController extends Controller
     public function getChatSummary()
     {
         $guests = DB::table('messages')
-            ->join('guest', 'messages.guest_id', '=', 'guest.GUEST_ID')
+            ->join('guest', 'messages.GUEST_ID', '=', 'guest.GUEST_ID')
             ->select(
-                'messages.guest_id',
+                'messages.GUEST_ID as guest_id',
                 DB::raw("CONCAT(guest.First_Name, ' ', guest.Last_Name) as guest_name")
             )
             ->distinct()
@@ -64,7 +63,7 @@ class ChatController extends Controller
 
     public function fetchGuestMessages($guest_id)
     {
-        $messages = Message::where('guest_id', $guest_id)
+        $messages = Message::where('GUEST_ID', $guest_id)
                     ->orderBy('created_at', 'asc')
                     ->get();
 
@@ -79,13 +78,10 @@ class ChatController extends Controller
         ]);
 
         $chat = new Message();
-        $chat->guest_id     = (int) $request->guest_id;
-        // staff_id is null — the staff table has no seeded records so passing
-        // any session value would violate the foreign key constraint
-        $chat->staff_id = session('staff_id') ?? null;
-        $chat->sender_type  = 'Staff';
-        $chat->message_text = $request->message;
-        $chat->status       = 'Sent';
+        $chat->GUEST_ID     = (int) $request->guest_id;
+        $chat->STAFF_ID     = session('staff_id') ?? null;
+        $chat->Message_Text = $request->message;
+        $chat->Status       = 'Sent';
         $chat->save();
 
         return response()->json(['success' => true]);

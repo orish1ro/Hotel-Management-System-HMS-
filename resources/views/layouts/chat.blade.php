@@ -260,8 +260,9 @@
                     </div>
                 `;
                 messages.forEach(msg => {
-                    const type = msg.sender_type === 'Guest' ? 'guest' : 'staff';
-                    appendBubble(msg.message_text, type);
+                    // If STAFF_ID is set, it's a staff reply; otherwise it's a guest message
+                    const type = msg.STAFF_ID ? 'staff' : 'guest';
+                    appendBubble(msg.Message_Text, type);
                 });
             });
     }
