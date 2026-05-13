@@ -405,9 +405,7 @@ class StaffController extends Controller
 
         $file     = $request->file('room_image');
         $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-        $dir = public_path('images/rooms');
-        if (!file_exists($dir)) { mkdir($dir, 0775, true); }
-        $file->move($dir, $filename);
+        $file->storeAs('rooms', $filename, 'public');
 
         DB::table('room')->insert([
             'Room_Number'     => $request->room_number,
@@ -415,7 +413,7 @@ class StaffController extends Controller
             'Price_Per_Night' => $request->price,
             'Capacity'        => $request->capacity,
             'Details'         => $request->details,
-            'Picture_Url'     => '/images/rooms/' . $filename,
+            'Picture_Url'     => '/storage/rooms/' . $filename,
             'Status'          => 'Available',
             'created_at'      => now(),
             'updated_at'      => now(),
@@ -448,10 +446,8 @@ class StaffController extends Controller
             $request->validate(['room_image' => 'image|mimes:jpg,jpeg,png,webp|max:5120']);
             $file     = $request->file('room_image');
             $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $dir = public_path('images/rooms');
-            if (!file_exists($dir)) { mkdir($dir, 0775, true); }
-            $file->move($dir, $filename);
-            $updateData['Picture_Url'] = '/images/rooms/' . $filename;
+            $file->storeAs('rooms', $filename, 'public');
+            $updateData['Picture_Url'] = '/storage/rooms/' . $filename;
         }
 
         DB::table('room')->where('ROOM_ID', $id)->update($updateData);

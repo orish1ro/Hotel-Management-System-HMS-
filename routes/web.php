@@ -232,10 +232,8 @@ Route::post('/book-final-submit', function (Request $request) {
     if ($request->hasFile('receipt_image')) {
         $file = $request->file('receipt_image');
         $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-        $dir = public_path('images/receipts');
-        if (!file_exists($dir)) { mkdir($dir, 0775, true); }
-        $file->move($dir, $filename);
-        $receiptPath = '/images/receipts/' . $filename;
+        $file->storeAs('receipts', $filename, 'public');
+        $receiptPath = '/storage/receipts/' . $filename;
     }
 
     // 1. Save the reservation as Pending and get the new ID
