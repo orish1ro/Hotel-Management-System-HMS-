@@ -405,7 +405,9 @@ class StaffController extends Controller
 
         $file     = $request->file('room_image');
         $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-        $file->move(public_path('images/rooms'), $filename);
+        $dir = public_path('images/rooms');
+        if (!file_exists($dir)) { mkdir($dir, 0775, true); }
+        $file->move($dir, $filename);
 
         DB::table('room')->insert([
             'Room_Number'     => $request->room_number,
@@ -446,7 +448,9 @@ class StaffController extends Controller
             $request->validate(['room_image' => 'image|mimes:jpg,jpeg,png,webp|max:5120']);
             $file     = $request->file('room_image');
             $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $file->move(public_path('images/rooms'), $filename);
+            $dir = public_path('images/rooms');
+            if (!file_exists($dir)) { mkdir($dir, 0775, true); }
+            $file->move($dir, $filename);
             $updateData['Picture_Url'] = '/images/rooms/' . $filename;
         }
 

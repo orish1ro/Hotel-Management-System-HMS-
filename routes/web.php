@@ -232,7 +232,9 @@ Route::post('/book-final-submit', function (Request $request) {
     if ($request->hasFile('receipt_image')) {
         $file = $request->file('receipt_image');
         $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-        $file->move(public_path('images/receipts'), $filename);
+        $dir = public_path('images/receipts');
+        if (!file_exists($dir)) { mkdir($dir, 0775, true); }
+        $file->move($dir, $filename);
         $receiptPath = '/images/receipts/' . $filename;
     }
 
