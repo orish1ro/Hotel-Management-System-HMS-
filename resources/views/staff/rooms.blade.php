@@ -20,11 +20,48 @@
     <div class="container rooms-container">
         
         <div class="header-flex" style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
-    <h3 class="section-title" style="margin:0;"><i class="fa-solid fa-bed"></i> Room Inventory</h3>
-    <a href="/staff/add-room" class="btn-add">
-        <i class="fa-solid fa-plus fa-xs"></i> Add New Room
-    </a>
-</div>
+            <h3 class="section-title" style="margin:0;"><i class="fa-solid fa-bed"></i> Room Inventory</h3>
+            <a href="/staff/add-room" class="btn-add">
+                <i class="fa-solid fa-plus fa-xs"></i> Add New Room
+            </a>
+        </div>
+
+        {{-- Search & Filter Bar --}}
+        <form method="GET" action="/staff/rooms" style="margin-bottom: 20px;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <div style="position:relative; flex:1; min-width:180px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:13px;"></i>
+                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
+                        placeholder="Search room # or type…"
+                        style="width:100%; padding:8px 12px 8px 34px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; box-sizing:border-box; outline:none;">
+                </div>
+                <select name="status" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; background:#fff; cursor:pointer;">
+                    <option value="">All Statuses</option>
+                    <option value="Available"      {{ ($filters['status'] ?? '') === 'Available'      ? 'selected' : '' }}>Available</option>
+                    <option value="Booked"         {{ ($filters['status'] ?? '') === 'Booked'         ? 'selected' : '' }}>Booked</option>
+                    <option value="Needs Cleaning" {{ ($filters['status'] ?? '') === 'Needs Cleaning' ? 'selected' : '' }}>Needs Cleaning</option>
+                </select>
+                <select name="type" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; background:#fff; cursor:pointer;">
+                    <option value="">All Types</option>
+                    @foreach($roomTypes as $type)
+                        <option value="{{ $type }}" {{ ($filters['type'] ?? '') === $type ? 'selected' : '' }}>{{ $type }}</option>
+                    @endforeach
+                </select>
+                <select name="sort" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; background:#fff; cursor:pointer;">
+                    <option value="Room_Number"     {{ ($filters['sort'] ?? 'Room_Number') === 'Room_Number'    ? 'selected' : '' }}>Sort: Room #</option>
+                    <option value="Price_Per_Night" {{ ($filters['sort'] ?? '') === 'Price_Per_Night' ? 'selected' : '' }}>Sort: Price</option>
+                    <option value="Capacity"        {{ ($filters['sort'] ?? '') === 'Capacity'        ? 'selected' : '' }}>Sort: Capacity</option>
+                </select>
+                <button type="submit" style="padding:8px 18px; background:#003366; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">
+                    <i class="fa-solid fa-filter"></i> Filter
+                </button>
+                @if(!empty($filters['search']) || !empty($filters['status']) || !empty($filters['type']))
+                    <a href="/staff/rooms" style="padding:8px 14px; background:#f1f5f9; color:#64748b; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none;">
+                        <i class="fa-solid fa-xmark"></i> Clear
+                    </a>
+                @endif
+            </div>
+        </form>
 
         @if(session('success'))
             <div style="background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; border: 1px solid #bbf7d0;">
@@ -33,8 +70,17 @@
         @endif
 
         <div class="rooms-scroll-area">
+
+            {{-- Results count --}}
+            <div style="font-size:13px; color:#64748b; font-weight:500; margin-bottom:14px;">
+                Showing {{ $rooms->firstItem() ?? 0 }}–{{ $rooms->lastItem() ?? 0 }} of {{ $rooms->total() }} room(s)
+                @if(!empty($filters['search']) || !empty($filters['status']) || !empty($filters['type']))
+                    <span style="color:#003366; font-weight:600;"> (filtered)</span>
+                @endif
+            </div>
+
             <div class="rooms-grid">
-                @foreach($rooms as $room)
+                @forelse($rooms as $room)
                 <div class="room-card">
                     <div class="room-img" style="background-image: url('{{ asset($room->Picture_Url) }}')">
                         @php $statusClass = str_replace(' ', '-', $room->Status); @endphp
@@ -74,7 +120,13 @@
                         </form>
                     </div>
                 </div>
-                @endforeach
+                @empty
+                    <div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8;">
+                        <i class="fa-solid fa-magnifying-glass" style="font-size:32px; margin-bottom:12px; display:block;"></i>
+                        <p style="font-size:15px; font-weight:600; margin:0 0 6px;">No rooms found</p>
+                        <p style="font-size:13px; margin:0;">Try adjusting your search or filters.</p>
+                    </div>
+                @endforelse
             </div>
             
             <div class="pagination-wrapper" style="margin-top: 20px; margin-bottom: 30px;">

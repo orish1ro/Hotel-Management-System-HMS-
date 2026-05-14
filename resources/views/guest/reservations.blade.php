@@ -37,7 +37,7 @@
         }
         .res-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.09); transform: translateY(-1px); }
 
-        .card-main { display: flex; min-height: 140px; }
+        .card-main { display: flex; min-height: 160px; }
 
         /* Image */
         .card-img {
@@ -345,6 +345,18 @@
                                     <span class="amount-due"><i class="fa-solid fa-clock" style="font-size:9px;"></i> +₱{{ number_format($balance, 2) }} due at check-in</span>
                                 @endif
                             </div>
+
+                            {{-- Confirmed By (placed under amount for breathing room) --}}
+                            @if(in_array($res->Status, ['Confirmed','Booked']) && !empty($res->confirmed_by_name))
+                                <div style="margin-top:10px;display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:4px 10px;">
+                                    <i class="fas fa-user-check" style="color:#16a34a;font-size:10px;"></i>
+                                    <span style="font-size:11px;color:#64748b;">Confirmed by</span>
+                                    <strong style="font-size:11px;color:#0f172a;">{{ $res->confirmed_by_name }}</strong>
+                                    @if(!empty($res->confirmed_by_role))
+                                        <span style="background:#dcfce7;border:1px solid #86efac;border-radius:4px;padding:1px 6px;font-size:10px;color:#166534;font-weight:700;">{{ $res->confirmed_by_role }}</span>
+                                    @endif
+                                </div>
+                            @endif
 
                         </div>
 

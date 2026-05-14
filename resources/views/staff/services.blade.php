@@ -10,7 +10,15 @@
 </head>
 <body>
 
-@include('staff.admin-sidebar')
+@if(session('staff_role') === 'Admin')
+    @if(session('staff_role') === 'Admin')
+    @include('staff.admin-sidebar')
+@else
+    @include('staff.sidebar')
+@endif
+@else
+    @include('staff.sidebar')
+@endif
 
 <div class="container" style="padding: 32px 36px;">
     <h3 class="section-title">
@@ -65,10 +73,37 @@
         </div>
     @endif
 
-    <div style="display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start;">
+    <div style="display: grid; grid-template-columns: {{ session('staff_role') === 'Admin' ? '1fr 360px' : '1fr' }}; gap: 24px; align-items: start;">
 
         {{-- ===== LEFT: Services Table ===== --}}
         <div>
+            {{-- Search & Filter Bar --}}
+            <form method="GET" action="/staff/services" style="margin-bottom: 14px;">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <div style="position:relative; flex:1; min-width:180px;">
+                        <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:12px;"></i>
+                        <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
+                            placeholder="Search by name or description…"
+                            style="width:100%; padding:8px 12px 8px 30px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; box-sizing:border-box; outline:none;">
+                    </div>
+                    <select name="category" style="padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; background:#fff; cursor:pointer;">
+                        <option value="">All Categories</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat }}" {{ ($filters['category'] ?? '') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" style="padding:8px 18px; background:#003366; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">
+                        <i class="fa-solid fa-filter"></i> Filter
+                    </button>
+                    @if(!empty($filters['search']) || !empty($filters['category']))
+                        <a href="/staff/services" style="padding:8px 14px; background:#f1f5f9; color:#64748b; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none;">
+                            <i class="fa-solid fa-xmark"></i> Clear
+                        </a>
+                        <span style="font-size:13px; color:#64748b;">{{ $services->total() }} result{{ $services->total() != 1 ? 's' : '' }}</span>
+                    @endif
+                </div>
+            </form>
+
             <div class="table-container">
                 <table>
                     <thead>
@@ -102,6 +137,7 @@
                                 ₱{{ number_format($svc->Price, 2) }}
                             </td>
                             <td style="white-space: nowrap;">
+                                @if(session('staff_role') === 'Admin')
                                 {{-- Edit button triggers modal --}}
                                 <button
                                     onclick="openEditModal({{ $svc->SERVICES_ID }}, '{{ addslashes($svc->Service_Name) }}', '{{ $svc->Price }}', '{{ addslashes($svc->Service_Category ?? '') }}', '{{ addslashes($svc->Description ?? '') }}')"
@@ -118,6 +154,9 @@
                                         <i class="fa-solid fa-trash"></i> Delete
                                     </button>
                                 </form>
+                                @else
+                                    <span style="font-size:12px;color:#94a3b8;font-style:italic;">View only</span>
+                                @endif
                             </td>
                         </tr>
                         @empty
@@ -137,7 +176,8 @@
             </div>
         </div>
 
-        {{-- ===== RIGHT: Add Service Form ===== --}}
+        {{-- ===== RIGHT: Add Service Form (Admin only) ===== --}}
+        @if(session('staff_role') === 'Admin')
         <div style="
             background: #fff;
             border: 1px solid #e2e8f0;
@@ -226,10 +266,10 @@
                 </button>
             </form>
         </div>
+        @endif
     </div>
 </div>
-
-{{-- ===== Edit Modal ===== --}}
+@if(session('staff_role') === 'Admin')
 <div id="editModal" style="
     display: none;
     position: fixed; inset: 0;
@@ -354,6 +394,7 @@
         if (e.target === this) closeEditModal();
     });
 </script>
+@endif
 
 </body>
 </html>

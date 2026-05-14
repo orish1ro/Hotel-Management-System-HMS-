@@ -27,10 +27,10 @@
         <a href="/staff/messages"     class="{{ Request::is('staff/messages')     ? 'active' : '' }}">Messages</a>
         <a href="/staff/reservations" class="{{ Request::is('staff/reservations') ? 'active' : '' }}">Reservations</a>
         <a href="/staff/housekeeping" class="{{ Request::is('staff/housekeeping') ? 'active' : '' }}">Housekeeping</a>
+        <a href="/staff/services"     class="{{ Request::is('staff/services')     ? 'active' : '' }}">Services</a>
 
         @if(session('staff_role') === 'Admin')
         <a href="/staff/transactions" class="{{ Request::is('staff/transactions') ? 'active' : '' }}">History</a>
-        <a href="/staff/services"     class="{{ Request::is('staff/services')     ? 'active' : '' }}">Services</a>
         @endif
 
         <a href="/logout" class="btn-logout">LOGOUT</a>

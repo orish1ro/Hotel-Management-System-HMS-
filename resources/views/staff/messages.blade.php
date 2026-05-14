@@ -186,6 +186,14 @@
 
     <div class="guest-panel">
         <div class="guest-panel-header">Guest Inquiries</div>
+        <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; background: #fff;">
+            <div style="position: relative;">
+                <svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; width:13px; height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+                <input type="text" id="guest-search" placeholder="Search guests..."
+                    style="width:100%; padding:8px 10px 8px 30px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; box-sizing:border-box; outline:none;"
+                    oninput="filterGuests(this.value)">
+            </div>
+        </div>
         <div id="guest-list"></div>
     </div>
 
@@ -211,31 +219,55 @@
 
 <script>
     let selectedGuestId = null;
+    let allGuests = [];
+
+    function renderGuestList(guests) {
+        const list = document.getElementById('guest-list');
+        list.innerHTML = '';
+
+        if (guests.length === 0) {
+            list.innerHTML = '<p style="padding:16px;color:#94a3b8;font-size:13px;">No guests found.</p>';
+            return;
+        }
+
+        guests.forEach(g => {
+            const displayName = g.guest_name || 'Guest #' + g.guest_id;
+            list.innerHTML += `
+                <div class="guest-item" onclick="selectGuest(${g.guest_id}, '${displayName}')">
+                    <div class="guest-item-top">
+                        <span class="guest-name">${displayName}</span>
+                        <span class="guest-dot"></span>
+                    </div>
+                    <div class="guest-id">Guest ID #${g.guest_id}</div>
+                </div>
+            `;
+        });
+    }
+
+    function filterGuests(query) {
+        const q = query.toLowerCase().trim();
+        if (!q) {
+            renderGuestList(allGuests);
+            return;
+        }
+        const filtered = allGuests.filter(g => {
+            const name = (g.guest_name || 'Guest #' + g.guest_id).toLowerCase();
+            return name.includes(q) || String(g.guest_id).includes(q);
+        });
+        renderGuestList(filtered);
+    }
 
     function loadGuestList() {
         fetch('/staff/get-guests')
             .then(res => res.json())
             .then(guests => {
-                const list = document.getElementById('guest-list');
-                list.innerHTML = '';
-
-                if (guests.length === 0) {
-                    list.innerHTML = '<p style="padding:16px;color:#94a3b8;font-size:13px;">No guest messages yet.</p>';
-                    return;
+                allGuests = guests;
+                const query = document.getElementById('guest-search').value;
+                if (query) {
+                    filterGuests(query);
+                } else {
+                    renderGuestList(allGuests);
                 }
-
-                guests.forEach(g => {
-                    const displayName = g.guest_name || 'Guest #' + g.guest_id;
-                    list.innerHTML += `
-                        <div class="guest-item" onclick="selectGuest(${g.guest_id}, '${displayName}')">
-                            <div class="guest-item-top">
-                                <span class="guest-name">${displayName}</span>
-                                <span class="guest-dot"></span>
-                            </div>
-                            <div class="guest-id">Guest ID #${g.guest_id}</div>
-                        </div>
-                    `;
-                });
             })
             .catch(err => console.error('Failed to load guest list:', err));
     }

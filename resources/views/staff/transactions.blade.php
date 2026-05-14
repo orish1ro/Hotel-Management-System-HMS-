@@ -104,6 +104,16 @@
                         font-weight:600; text-decoration:none;
                     "><i class="fa-solid fa-xmark"></i></a>
                     @endif
+                    {{-- Export PDF --}}
+                    <a href="/staff/transactions/export?{{ http_build_query(array_filter($filters ?? [])) }}" target="_blank" style="
+                        display:inline-flex; align-items:center; gap:6px;
+                        padding:9px 18px; background:linear-gradient(135deg,#dc2626,#b91c1c);
+                        color:#fff; border:none; border-radius:9px; font-size:13px;
+                        font-weight:700; cursor:pointer; white-space:nowrap; text-decoration:none;
+                        box-shadow:0 2px 8px rgba(220,38,38,0.2);
+                    ">
+                        <i class="fa-solid fa-file-pdf"></i> Export PDF
+                    </a>
                 </div>
 
             </div>

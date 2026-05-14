@@ -187,24 +187,25 @@
             background: #fff;
             border-radius: 20px;
             border: 1px solid #e2e8f0;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
-        .res-table-wrap table { width: 100%; border-collapse: collapse; }
+        .res-table-wrap table { width: 100%; border-collapse: collapse; min-width: 900px; }
         .res-table-wrap th {
             background: #f8fafc;
             color: #64748b;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.6px;
-            padding: 14px 18px;
+            padding: 12px 10px;
             border-bottom: 1px solid #e2e8f0;
             white-space: nowrap;
         }
         .res-table-wrap td {
-            padding: 16px 18px;
-            font-size: 13.5px;
+            padding: 12px 10px;
+            font-size: 12.5px;
             color: #475569;
             font-weight: 500;
             border-bottom: 1px solid #f1f5f9;
@@ -231,7 +232,7 @@
         .res-date { font-size: 13px; color: #475569; white-space: nowrap; }
         .res-date-label { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .res-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 140px; }
+        .res-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 120px; }
 
         .res-btn-receipt {
             display: inline-flex; align-items: center; gap: 5px;
@@ -271,7 +272,141 @@
 
         .res-checked-out { display: inline-flex; align-items: center; gap: 5px; color: #10b981; font-size: 12.5px; font-weight: 700; }
         .res-no-action { color: #cbd5e1; font-size: 13px; }
+
+        .res-filter-bar {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .res-filter-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        @media (max-width: 900px) {
+            .res-filter-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .res-filter-label {
+            display: block; font-size: 10.5px; font-weight: 700;
+            color: #64748b; text-transform: uppercase;
+            letter-spacing: 0.05em; margin-bottom: 5px;
+        }
+        .res-filter-input, .res-filter-select {
+            width: 100%; padding: 8px 10px 8px 32px;
+            border: 1.5px solid #e2e8f0; border-radius: 8px;
+            font-size: 12.5px; box-sizing: border-box;
+            outline: none; transition: border-color 0.2s; background: #fff;
+        }
+        .res-filter-select { padding-left: 10px; }
+        .res-filter-input:focus, .res-filter-select:focus { border-color: #3b82f6; }
+        .res-filter-search-wrap { position: relative; }
+        .res-filter-search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 11px; }
+        .res-filter-btn-apply {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; background: linear-gradient(135deg, #003366, #004fa3);
+            color: #fff; border: none; border-radius: 8px;
+            font-size: 12.5px; font-weight: 700; cursor: pointer;
+            white-space: nowrap; transition: opacity 0.2s;
+        }
+        .res-filter-btn-apply:hover { opacity: 0.88; }
+        .res-filter-btn-clear {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 8px 12px; background: #f1f5f9;
+            border: 1.5px solid #e2e8f0; color: #64748b; border-radius: 8px;
+            font-size: 12.5px; font-weight: 600; cursor: pointer;
+            text-decoration: none; transition: background 0.2s;
+        }
+        .res-filter-btn-clear:hover { background: #e2e8f0; }
+        .res-active-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #eff6ff; border: 1px solid #bfdbfe;
+            color: #1d4ed8; border-radius: 20px;
+            padding: 4px 10px; font-size: 11.5px; font-weight: 600;
+        }
     </style>
+
+    {{-- Search & Filter Bar --}}
+    <form method="GET" action="/staff/reservations">
+        <div class="res-filter-bar">
+            <div class="res-filter-grid">
+                <div>
+                    <label class="res-filter-label">Search</label>
+                    <div class="res-filter-search-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" name="search" class="res-filter-input"
+                            placeholder="Name, room type, or ID..."
+                            value="{{ $filters['search'] ?? '' }}">
+                    </div>
+                </div>
+                <div>
+                    <label class="res-filter-label">Booking Status</label>
+                    <select name="status" class="res-filter-select">
+                        <option value="">All Statuses</option>
+                        @foreach(['Pending','Confirmed','Checked Out','Cancelled'] as $s)
+                            <option value="{{ $s }}" {{ ($filters['statusFilter'] ?? '') == $s ? 'selected' : '' }}>{{ $s }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="res-filter-label">Payment</label>
+                    <select name="payment_status" class="res-filter-select">
+                        <option value="">All</option>
+                        <option value="50% Deposit" {{ ($filters['paymentFilter'] ?? '') == '50% Deposit' ? 'selected' : '' }}>50% Deposit</option>
+                        <option value="Fully Paid"  {{ ($filters['paymentFilter'] ?? '') == 'Fully Paid'  ? 'selected' : '' }}>Fully Paid</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="res-filter-label">Check-In From</label>
+                    <input type="date" name="date_from" class="res-filter-input" style="padding-left:10px;"
+                        value="{{ $filters['dateFrom'] ?? '' }}">
+                </div>
+                <div>
+                    <label class="res-filter-label">Check-In To</label>
+                    <input type="date" name="date_to" class="res-filter-input" style="padding-left:10px;"
+                        value="{{ $filters['dateTo'] ?? '' }}">
+                </div>
+                <div style="display:flex; gap:6px; align-items:flex-end;">
+                    <button type="submit" class="res-filter-btn-apply">
+                        <i class="fa-solid fa-filter"></i> Filter
+                    </button>
+                    @php
+                        $hasFilters = !empty($filters['search']) || !empty($filters['statusFilter'])
+                            || !empty($filters['paymentFilter']) || !empty($filters['dateFrom']) || !empty($filters['dateTo']);
+                    @endphp
+                    @if($hasFilters ?? false)
+                        <a href="/staff/reservations" class="res-filter-btn-clear" title="Clear all filters">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            @if($hasFilters ?? false)
+            <div style="margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-size:11px; color:#94a3b8; font-weight:600;">Active:</span>
+                @if(!empty($filters['search']))
+                    <span class="res-active-badge"><i class="fa-solid fa-magnifying-glass" style="font-size:9px;"></i> "{{ $filters['search'] }}"</span>
+                @endif
+                @if(!empty($filters['statusFilter']))
+                    <span class="res-active-badge"><i class="fa-solid fa-tag" style="font-size:9px;"></i> {{ $filters['statusFilter'] }}</span>
+                @endif
+                @if(!empty($filters['paymentFilter']))
+                    <span class="res-active-badge"><i class="fa-solid fa-peso-sign" style="font-size:9px;"></i> {{ $filters['paymentFilter'] }}</span>
+                @endif
+                @if(!empty($filters['dateFrom']) || !empty($filters['dateTo']))
+                    <span class="res-active-badge"><i class="fa-solid fa-calendar" style="font-size:9px;"></i> {{ $filters['dateFrom'] ?? '…' }} → {{ $filters['dateTo'] ?? '…' }}</span>
+                @endif
+                <span style="font-size:11px; color:#64748b; margin-left:4px;">
+                    — {{ $reservations->total() }} result{{ $reservations->total() != 1 ? 's' : '' }}
+                </span>
+            </div>
+            @endif
+        </div>
+    </form>
 
     <div class="res-table-wrap">
         {{-- Legend bar --}}

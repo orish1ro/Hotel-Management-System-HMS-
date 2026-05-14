@@ -69,7 +69,6 @@
 <body>
 <header>
 <div class="logo-text">Ragadio Plaza Hotel</div>
-<div class="search-container"><input type="text" placeholder="search"></div>
 <nav>
 <a href="/">Home</a>
 <a href="/rooms">Rooms</a>

@@ -121,6 +121,7 @@ html {
     /* ── Table: allow horizontal scroll ── */
     .table-container {
         overflow-x: auto !important;
+        overflow-y: visible !important;
         -webkit-overflow-scrolling: touch;
     }
     table {

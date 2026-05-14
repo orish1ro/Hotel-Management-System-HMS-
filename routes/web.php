@@ -102,13 +102,16 @@ Route::get('/reservations', function () {
         ->when(request('status') && request('status') !== 'all', function($q) {
             $q->where('reservation.Status', request('status'));
         })
+        ->leftJoin('staff', 'reservation.STAFF_ID', '=', 'staff.STAFF_ID')
         ->select(
             'reservation.*',
             'room.Room_Type',
             'room.Room_Number',
             'room.Picture_Url',
             'payment.PAYMENT_ID',
-            'payment.Payment_Status'
+            'payment.Payment_Status',
+            DB::raw("CONCAT(staff.First_Name, ' ', staff.Last_Name) as confirmed_by_name"),
+            'staff.Role as confirmed_by_role'
         )
         ->orderBy('reservation.RESERVATION_ID', 'desc')
         ->paginate(5);
@@ -354,6 +357,7 @@ Route::post('/staff/edit-room-submit/{id}',    [StaffController::class, 'editRoo
 Route::post('/staff/delete-room/{id}',         [StaffController::class, 'deleteRoom']);
 
 Route::get('/staff/transactions',              [StaffController::class, 'transactions']);
+Route::get('/staff/transactions/export',       [StaffController::class, 'exportTransactionsPdf']);
 
 Route::get('/staff/rooms-view',                [StaffController::class, 'roomsView']);
 Route::get('/staff/housekeeping',              [StaffController::class, 'housekeeping']);

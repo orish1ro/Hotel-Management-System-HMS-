@@ -322,39 +322,10 @@
             {{-- Greeting --}}
             <div class="guest-greeting">
                 <div class="avatar">{{ strtoupper(substr($headerGuest->First_Name ?? 'G', 0, 1)) }}</div>
-                Hi, {{ $headerGuest->First_Name ?? 'Guest' }}!
+              {{ $headerGuest->First_Name ?? 'Guest' }}
             </div>
 
-            {{-- Notification Bell --}}
-            <div class="notif-wrapper">
-                <a class="notif-bell" id="notifBell" onclick="toggleNotif(event)">
-                    <i class="fa-solid fa-bell"></i>
-                    @if($pendingCount > 0)
-                        <span class="notif-dot"></span>
-                    @endif
-                </a>
-                <div class="notif-dropdown" id="notifDropdown">
-                    <div class="notif-dropdown-header">Reservation Updates</div>
-                    @forelse($recentReservations as $notif)
-                        <a href="/reservations" class="notif-item">
-                            <div class="notif-icon {{ strtolower($notif->Status) }}">
-                                @if($notif->Status == 'Pending') <i class="fa-solid fa-clock"></i>
-                                @elseif($notif->Status == 'Confirmed') <i class="fa-solid fa-circle-check"></i>
-                                @elseif($notif->Status == 'Cancelled') <i class="fa-solid fa-circle-xmark"></i>
-                                @else <i class="fa-solid fa-door-open"></i>
-                                @endif
-                            </div>
-                            <div class="notif-text">
-                                <strong>{{ $notif->Room_Type }}</strong>
-                                <span>{{ $notif->Status }} · {{ \Carbon\Carbon::parse($notif->Check_In_Date)->format('M d') }} – {{ \Carbon\Carbon::parse($notif->Check_Out_Date)->format('M d, Y') }}</span>
-                            </div>
-                        </a>
-                    @empty
-                        <div class="notif-empty">No reservations yet.</div>
-                    @endforelse
-                    <div class="notif-footer"><a href="/reservations">View all reservations →</a></div>
-                </div>
-            </div>
+
 
             <a href="/logout">Logout</a>
         @else

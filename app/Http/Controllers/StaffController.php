@@ -195,7 +195,15 @@ class StaffController extends Controller
     {
         if (!session()->has('staff_id')) return redirect('/staff/login');
 
-        $reservations = DB::table('reservation')
+        $filters = [
+            'search'        => request('search'),
+            'statusFilter'  => request('status'),
+            'paymentFilter' => request('payment_status'),
+            'dateFrom'      => request('date_from'),
+            'dateTo'        => request('date_to'),
+        ];
+
+        $query = DB::table('reservation')
             ->join('guest', 'reservation.GUEST_ID', '=', 'guest.GUEST_ID')
             ->join('room', 'reservation.ROOM_ID', '=', 'room.ROOM_ID')
             ->leftJoinSub(
@@ -224,11 +232,41 @@ class StaffController extends Controller
                 'payment.Amount as Amount_Paid',
                 'payment.Receipt_Image',
                 'payment.Payment_Status'
-            )
-            ->orderBy('reservation.RESERVATION_ID', 'desc')
-            ->paginate(7);
+            );
 
-        return view('staff.reservations', ['reservations' => $reservations]);
+        if (!empty($filters['search'])) {
+            $s = $filters['search'];
+            $query->where(function($q) use ($s) {
+                $q->where('guest.First_Name',  'like', "%{$s}%")
+                  ->orWhere('guest.Last_Name',  'like', "%{$s}%")
+                  ->orWhere('room.Room_Type',   'like', "%{$s}%")
+                  ->orWhere(DB::raw('CAST(reservation.RESERVATION_ID AS CHAR)'), 'like', "%{$s}%");
+            });
+        }
+
+        if (!empty($filters['statusFilter'])) {
+            $query->where('reservation.Status', $filters['statusFilter']);
+        }
+
+        if (!empty($filters['paymentFilter'])) {
+            $query->where('payment.Payment_Status', $filters['paymentFilter']);
+        }
+
+        if (!empty($filters['dateFrom'])) {
+            $query->whereDate('reservation.Check_In_Date', '>=', $filters['dateFrom']);
+        }
+        if (!empty($filters['dateTo'])) {
+            $query->whereDate('reservation.Check_In_Date', '<=', $filters['dateTo']);
+        }
+
+        $reservations = $query->orderBy('reservation.RESERVATION_ID', 'desc')
+                              ->paginate(7)
+                              ->appends($filters);
+
+        return view('staff.reservations', [
+            'reservations' => $reservations,
+            'filters'      => $filters,
+        ]);
     }
 
     public function updateReservation(Request $request, $id)
@@ -382,8 +420,43 @@ class StaffController extends Controller
     {
         if (!session()->has('staff_id')) return redirect('/staff/login');
 
-        $rooms = DB::table('room')->paginate(8);
-        return view('staff.rooms', ['rooms' => $rooms]);
+        $filters = [
+            'search' => request('search'),
+            'status' => request('status'),
+            'type'   => request('type'),
+            'sort'   => request('sort', 'Room_Number'),
+        ];
+
+        $query = DB::table('room');
+
+        if (!empty($filters['search'])) {
+            $s = $filters['search'];
+            $query->where(function($q) use ($s) {
+                $q->where('Room_Number', 'like', "%{$s}%")
+                  ->orWhere('Room_Type', 'like', "%{$s}%");
+            });
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('Status', $filters['status']);
+        }
+
+        if (!empty($filters['type'])) {
+            $query->where('Room_Type', $filters['type']);
+        }
+
+        $allowedSorts = ['Room_Number', 'Price_Per_Night', 'Capacity'];
+        $sort = in_array($filters['sort'], $allowedSorts) ? $filters['sort'] : 'Room_Number';
+        $query->orderBy($sort);
+
+        $rooms     = $query->paginate(8)->appends($filters);
+        $roomTypes = DB::table('room')->distinct()->pluck('Room_Type');
+
+        return view('staff.rooms', [
+            'rooms'     => $rooms,
+            'filters'   => $filters,
+            'roomTypes' => $roomTypes,
+        ]);
     }
 
     public function addRoomPage()
@@ -490,7 +563,15 @@ class StaffController extends Controller
     {
         if (!session()->has('staff_id')) return redirect('/staff/login');
 
-        $transactions = DB::table('payment')
+        $filters = [
+            'search'    => request('search'),
+            'status'    => request('status'),
+            'method'    => request('method'),
+            'date_from' => request('date_from'),
+            'date_to'   => request('date_to'),
+        ];
+
+        $query = DB::table('payment')
             ->join('reservation', 'payment.RESERVATION_ID', '=', 'reservation.RESERVATION_ID')
             ->join('guest', 'reservation.GUEST_ID', '=', 'guest.GUEST_ID')
             ->join('room', 'reservation.ROOM_ID', '=', 'room.ROOM_ID')
@@ -501,11 +582,116 @@ class StaffController extends Controller
                 'room.Room_Type',
                 'room.Room_Number',
                 'reservation.Status as ReservationStatus'
-            )
-            ->orderBy('payment.Payment_Date', 'desc')
-            ->paginate(10);
+            );
 
-        return view('staff.transactions', ['transactions' => $transactions]);
+        // Search by name or room
+        if (!empty($filters['search'])) {
+            $s = $filters['search'];
+            $query->where(function($q) use ($s) {
+                $q->where('guest.First_Name', 'like', "%{$s}%")
+                  ->orWhere('guest.Last_Name',  'like', "%{$s}%")
+                  ->orWhere('room.Room_Type',   'like', "%{$s}%")
+                  ->orWhere('room.Room_Number', 'like', "%{$s}%");
+            });
+        }
+
+        // Filter by reservation status
+        if (!empty($filters['status'])) {
+            $query->where('reservation.Status', $filters['status']);
+        }
+
+        // Filter by payment method
+        if (!empty($filters['method'])) {
+            $query->where('payment.Payment_Method', $filters['method']);
+        }
+
+        // Filter by date range
+        if (!empty($filters['date_from'])) {
+            $query->whereDate('payment.Payment_Date', '>=', $filters['date_from']);
+        }
+        if (!empty($filters['date_to'])) {
+            $query->whereDate('payment.Payment_Date', '<=', $filters['date_to']);
+        }
+
+        // Count and total for filtered results banner
+        $countFiltered = (clone $query)->count();
+        $totalFiltered = (clone $query)->sum('payment.Amount');
+
+        $transactions = $query->orderBy('payment.Payment_Date', 'desc')->paginate(10)->appends($filters);
+
+        return view('staff.transactions', [
+            'transactions'  => $transactions,
+            'filters'       => $filters,
+            'countFiltered' => $countFiltered,
+            'totalFiltered' => $totalFiltered,
+        ]);
+    }
+
+    // ==========================================
+    // TRANSACTIONS EXPORT PDF
+    // ==========================================
+
+    public function exportTransactionsPdf(Request $request)
+    {
+        if (!session()->has('staff_id')) return redirect('/staff/login');
+
+        $filters = [
+            'search'    => $request->search,
+            'status'    => $request->status,
+            'method'    => $request->method,
+            'date_from' => $request->date_from,
+            'date_to'   => $request->date_to,
+        ];
+
+        $query = DB::table('payment')
+            ->join('reservation', 'payment.RESERVATION_ID', '=', 'reservation.RESERVATION_ID')
+            ->join('guest', 'reservation.GUEST_ID', '=', 'guest.GUEST_ID')
+            ->join('room', 'reservation.ROOM_ID', '=', 'room.ROOM_ID')
+            ->select(
+                'payment.PAYMENT_ID',
+                'payment.Amount',
+                'payment.Payment_Date',
+                'payment.Payment_Method',
+                'reservation.Status as ReservationStatus',
+                'guest.First_Name',
+                'guest.Last_Name',
+                'room.Room_Type',
+                'room.Room_Number'
+            );
+
+        if (!empty($filters['search'])) {
+            $s = $filters['search'];
+            $query->where(function($q) use ($s) {
+                $q->where('guest.First_Name', 'like', "%{$s}%")
+                  ->orWhere('guest.Last_Name', 'like', "%{$s}%")
+                  ->orWhere('room.Room_Type', 'like', "%{$s}%");
+            });
+        }
+        if (!empty($filters['status']))    $query->where('reservation.Status', $filters['status']);
+        if (!empty($filters['method']))    $query->where('payment.Payment_Method', $filters['method']);
+        if (!empty($filters['date_from'])) $query->whereDate('payment.Payment_Date', '>=', $filters['date_from']);
+        if (!empty($filters['date_to']))   $query->whereDate('payment.Payment_Date', '<=', $filters['date_to']);
+
+        $transactions = $query->orderBy('payment.Payment_Date', 'desc')->get();
+        $total        = $transactions->sum('Amount');
+
+        $html = view('staff.transactions-pdf', [
+            'transactions' => $transactions,
+            'filters'      => $filters,
+            'total'        => $total,
+            'exportedBy'   => session('staff_name'),
+            'exportedAt'   => now()->format('M d, Y h:i A'),
+        ])->render();
+
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return response($dompdf->output(), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="transactions_' . now()->format('Y-m-d') . '.pdf"',
+        ]);
     }
 
     // ==========================================
@@ -556,8 +742,44 @@ class StaffController extends Controller
     public function roomsView()
     {
         if (!session()->has('staff_id')) return redirect('/staff/login');
-        $rooms = DB::table('room')->paginate(12);
-        return view('staff.staff-rooms', ['rooms' => $rooms]);
+
+        $filters = [
+            'search' => request('search'),
+            'status' => request('status'),
+            'type'   => request('type'),
+            'sort'   => request('sort', 'Room_Number'),
+        ];
+
+        $query = DB::table('room');
+
+        if (!empty($filters['search'])) {
+            $s = $filters['search'];
+            $query->where(function($q) use ($s) {
+                $q->where('Room_Number', 'like', "%{$s}%")
+                  ->orWhere('Room_Type', 'like', "%{$s}%");
+            });
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('Status', $filters['status']);
+        }
+
+        if (!empty($filters['type'])) {
+            $query->where('Room_Type', $filters['type']);
+        }
+
+        $allowedSorts = ['Room_Number', 'Price_Per_Night', 'Capacity'];
+        $sort = in_array($filters['sort'], $allowedSorts) ? $filters['sort'] : 'Room_Number';
+        $query->orderBy($sort);
+
+        $rooms     = $query->paginate(12)->appends($filters);
+        $roomTypes = DB::table('room')->distinct()->pluck('Room_Type');
+
+        return view('staff.staff-rooms', [
+            'rooms'     => $rooms,
+            'filters'   => $filters,
+            'roomTypes' => $roomTypes,
+        ]);
     }
 
     // ==========================================
@@ -567,10 +789,36 @@ class StaffController extends Controller
     public function services()
     {
         if (!session()->has('staff_id')) return redirect('/staff/login');
-        if (session('staff_role') !== 'Admin') return redirect('/staff/dashboard')->with('error', 'Access denied.');
 
-        $services = DB::table('services')->orderBy('Service_Category')->orderBy('Service_Name')->paginate(10);
-        return view('staff.services', ['services' => $services]);
+        $filters = [
+            'search'   => request('search'),
+            'category' => request('category'),
+        ];
+
+        $query = DB::table('services');
+
+        if (!empty($filters['search'])) {
+            $s = $filters['search'];
+            $query->where(function($q) use ($s) {
+                $q->where('Service_Name', 'like', "%{$s}%")
+                  ->orWhere('Description', 'like', "%{$s}%");
+            });
+        }
+
+        if (!empty($filters['category'])) {
+            $query->where('Service_Category', $filters['category']);
+        }
+
+        $query->orderBy('Service_Category')->orderBy('Service_Name');
+
+        $services   = $query->paginate(10)->appends($filters);
+        $categories = DB::table('services')->distinct()->orderBy('Service_Category')->pluck('Service_Category');
+
+        return view('staff.services', [
+            'services'   => $services,
+            'filters'    => $filters,
+            'categories' => $categories,
+        ]);
     }
 
     public function addServiceSubmit(Request $request)

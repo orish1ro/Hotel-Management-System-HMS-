@@ -21,37 +21,58 @@
         <div class="header-flex" style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
             <h3 class="section-title" style="margin:0;"><i class="fa-solid fa-bed"></i> Room Status</h3>
             <span style="font-size:13px; color:#94a3b8; font-weight:600;">
-                Showing {{ $rooms->firstItem() }}–{{ $rooms->lastItem() }} of {{ $rooms->total() }} rooms
+                Showing {{ $rooms->firstItem() ?? 0 }}–{{ $rooms->lastItem() ?? 0 }} of {{ $rooms->total() }} rooms
             </span>
         </div>
 
-        {{-- Filter Buttons --}}
+        {{-- Search & Filter Bar --}}
+        <form method="GET" action="/staff/rooms-view" style="margin-bottom: 16px;">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <div style="position:relative; flex:1; min-width:180px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:13px;"></i>
+                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
+                        placeholder="Search room # or type…"
+                        style="width:100%; padding:8px 12px 8px 34px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; box-sizing:border-box; outline:none;">
+                </div>
+                <select name="type" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; background:#fff; cursor:pointer;">
+                    <option value="">All Types</option>
+                    @foreach($roomTypes as $type)
+                        <option value="{{ $type }}" {{ ($filters['type'] ?? '') === $type ? 'selected' : '' }}>{{ $type }}</option>
+                    @endforeach
+                </select>
+                <select name="sort" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#334155; background:#fff; cursor:pointer;">
+                    <option value="Room_Number"     {{ ($filters['sort'] ?? 'Room_Number') === 'Room_Number'    ? 'selected' : '' }}>Sort: Room #</option>
+                    <option value="Price_Per_Night" {{ ($filters['sort'] ?? '') === 'Price_Per_Night' ? 'selected' : '' }}>Sort: Price</option>
+                    <option value="Capacity"        {{ ($filters['sort'] ?? '') === 'Capacity'        ? 'selected' : '' }}>Sort: Capacity</option>
+                </select>
+                <button type="submit" style="padding:8px 18px; background:#003366; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">
+                    <i class="fa-solid fa-filter"></i> Search
+                </button>
+                @if(!empty($filters['search']) || !empty($filters['type']))
+                    <a href="/staff/rooms-view" style="padding:8px 14px; background:#f1f5f9; color:#64748b; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none;">
+                        <i class="fa-solid fa-xmark"></i> Clear
+                    </a>
+                @endif
+            </div>
+        </form>
+
+        {{-- Status Filter Buttons --}}
         <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-            <button onclick="filterRooms('all', this)"
-                style="padding: 6px 16px; border-radius: 50px; border: 1px solid #003366; background: #003366; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;"
-                class="filter-btn active">
+            <a href="/staff/rooms-view?search={{ urlencode($filters['search'] ?? '') }}&type={{ urlencode($filters['type'] ?? '') }}&sort={{ $filters['sort'] ?? 'Room_Number' }}"
+                style="padding: 6px 16px; border-radius: 50px; border: 1px solid {{ empty($filters['status'] ?? '') ? '#003366' : '#e2e8f0' }}; background: {{ empty($filters['status'] ?? '') ? '#003366' : '#fff' }}; color: {{ empty($filters['status'] ?? '') ? '#fff' : '#64748b' }}; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration:none;">
                 <i class="fa-solid fa-table-cells-large"></i> All
-            </button>
-            <button onclick="filterRooms('Available', this)"
-                style="padding: 6px 16px; border-radius: 50px; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer;"
-                class="filter-btn">
-                <i class="fa-solid fa-circle-check"></i> Available
-            </button>
-            <button onclick="filterRooms('Booked', this)"
-                style="padding: 6px 16px; border-radius: 50px; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer;"
-                class="filter-btn">
-                <i class="fa-solid fa-lock"></i> Booked
-            </button>
-            <button onclick="filterRooms('Needs Cleaning', this)"
-                style="padding: 6px 16px; border-radius: 50px; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer;"
-                class="filter-btn">
-                <i class="fa-solid fa-broom"></i> Needs Cleaning
-            </button>
+            </a>
+            @foreach(['Available' => 'fa-circle-check', 'Booked' => 'fa-lock', 'Needs Cleaning' => 'fa-broom'] as $s => $icon)
+            <a href="/staff/rooms-view?search={{ urlencode($filters['search'] ?? '') }}&type={{ urlencode($filters['type'] ?? '') }}&sort={{ $filters['sort'] ?? 'Room_Number' }}&status={{ urlencode($s) }}"
+                style="padding: 6px 16px; border-radius: 50px; border: 1px solid {{ ($filters['status'] ?? '') === $s ? '#003366' : '#e2e8f0' }}; background: {{ ($filters['status'] ?? '') === $s ? '#003366' : '#fff' }}; color: {{ ($filters['status'] ?? '') === $s ? '#fff' : '#64748b' }}; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration:none;">
+                <i class="fa-solid {{ $icon }}"></i> {{ $s }}
+            </a>
+            @endforeach
         </div>
 
         <div class="rooms-scroll-area">
             <div class="rooms-grid" id="roomsGrid">
-                @foreach($rooms as $room)
+                @forelse($rooms as $room)
                 @php
                     $statusClass = str_replace(' ', '-', $room->Status);
                     $statusColors = [
@@ -87,7 +108,13 @@
                         </div>
                     </div>
                 </div>
-                @endforeach
+                @empty
+                    <div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#94a3b8;">
+                        <i class="fa-solid fa-magnifying-glass" style="font-size:32px; margin-bottom:12px; display:block;"></i>
+                        <p style="font-size:15px; font-weight:600; margin:0 0 6px;">No rooms found</p>
+                        <p style="font-size:13px; margin:0;">Try adjusting your search or filters.</p>
+                    </div>
+                @endforelse
             </div>
 
             <div style="margin-top: 24px; margin-bottom: 30px; display:flex; justify-content:space-between; align-items:center; padding: 16px 4px; border-top: 1px solid #e2e8f0;">
@@ -100,23 +127,6 @@
             </div>
         </div>
     </div>
-
-<script>
-    function filterRooms(status, btn) {
-        document.querySelectorAll('.filter-btn').forEach(b => {
-            b.style.background   = '#fff';
-            b.style.color        = '#64748b';
-            b.style.borderColor  = '#e2e8f0';
-        });
-        btn.style.background  = '#003366';
-        btn.style.color       = '#fff';
-        btn.style.borderColor = '#003366';
-
-        document.querySelectorAll('.room-card').forEach(card => {
-            card.style.display = (status === 'all' || card.dataset.status === status) ? '' : 'none';
-        });
-    }
-</script>
 
 </body>
 </html>
