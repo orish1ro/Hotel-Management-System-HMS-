@@ -295,4 +295,4 @@ img { max-width: 100%; height: auto; display: block; }
 @media (max-width: 480px) {
     .pagination-wrapper { gap: 3px; }
     .pagination-wrapper .page-link { min-width: 30px; height: 30px; font-size: 12px; padding: 0 8px; }
-}
+} 
