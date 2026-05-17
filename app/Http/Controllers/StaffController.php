@@ -5,9 +5,31 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Cloudinary\Cloudinary;
 
 class StaffController extends Controller
 {
+    // ==========================================
+    // HELPER: Upload image to Cloudinary
+    // ==========================================
+
+    private function uploadToCloudinary($file, $folder = 'hotel')
+    {
+        $cloudinary = new Cloudinary([
+            'cloud' => [
+                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                'api_key'    => env('CLOUDINARY_API_KEY'),
+                'api_secret' => env('CLOUDINARY_API_SECRET'),
+            ],
+        ]);
+
+        $uploaded = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+            'folder' => $folder,
+        ]);
+
+        return $uploaded['secure_url'];
+    }
+
     // ==========================================
     // AUTH
     // ==========================================
@@ -158,7 +180,7 @@ class StaffController extends Controller
         }
 
         // -------------------------------------------------------
-        // STAFF DASHBOARD — no money data, operational metrics only
+        // STAFF DASHBOARD
         // -------------------------------------------------------
         $roomsToClean = DB::table('room')
             ->where('cleaning_status', 'Needs Cleaning')
@@ -303,7 +325,6 @@ class StaffController extends Controller
             ]);
 
         if ($request->status === 'Confirmed') {
-            // Fetch guest, room, and payment info for the notification
             $details = DB::table('reservation')
                 ->join('guest', 'reservation.GUEST_ID', '=', 'guest.GUEST_ID')
                 ->join('room', 'reservation.ROOM_ID', '=', 'room.ROOM_ID')
@@ -354,7 +375,6 @@ class StaffController extends Controller
             ->where('RESERVATION_ID', $id)
             ->update(['Status' => 'Checked Out']);
 
-        // If not already fully paid, insert the balance payment and mark as fully paid
         $payment = DB::table('payment')->where('RESERVATION_ID', $id)->first();
         if ($payment && ($payment->Payment_Status ?? '50% Deposit') !== 'Fully Paid') {
             DB::table('payment')->insert([
@@ -387,11 +407,9 @@ class StaffController extends Controller
     {
         if (!session()->has('staff_id')) return redirect('/staff/login');
 
-        // Get the original deposit amount
         $payment = DB::table('payment')->where('RESERVATION_ID', $id)->first();
 
         if ($payment) {
-            // Insert the balance payment (same amount as the deposit = remaining 50%)
             DB::table('payment')->insert([
                 'RESERVATION_ID' => $id,
                 'STAFF_ID'       => session('staff_id'),
@@ -403,7 +421,6 @@ class StaffController extends Controller
                 'updated_at'     => now(),
             ]);
 
-            // Mark the original deposit record as Fully Paid too
             DB::table('payment')
                 ->where('PAYMENT_ID', $payment->PAYMENT_ID)
                 ->update(['Payment_Status' => 'Fully Paid', 'updated_at' => now()]);
@@ -476,9 +493,8 @@ class StaffController extends Controller
             'room_image'  => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
-        $file     = $request->file('room_image');
-        $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-        $file->storeAs('rooms', $filename, 'public');
+        // Upload image to Cloudinary
+        $pictureUrl = $this->uploadToCloudinary($request->file('room_image'), 'rooms');
 
         DB::table('room')->insert([
             'Room_Number'     => $request->room_number,
@@ -486,7 +502,7 @@ class StaffController extends Controller
             'Price_Per_Night' => $request->price,
             'Capacity'        => $request->capacity,
             'Details'         => $request->details,
-            'Picture_Url'     => '/storage/rooms/' . $filename,
+            'Picture_Url'     => $pictureUrl,
             'Status'          => 'Available',
             'created_at'      => now(),
             'updated_at'      => now(),
@@ -517,10 +533,8 @@ class StaffController extends Controller
 
         if ($request->hasFile('room_image')) {
             $request->validate(['room_image' => 'image|mimes:jpg,jpeg,png,webp|max:5120']);
-            $file     = $request->file('room_image');
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $file->storeAs('rooms', $filename, 'public');
-            $updateData['Picture_Url'] = '/storage/rooms/' . $filename;
+            // Upload new image to Cloudinary
+            $updateData['Picture_Url'] = $this->uploadToCloudinary($request->file('room_image'), 'rooms');
         }
 
         DB::table('room')->where('ROOM_ID', $id)->update($updateData);
@@ -584,7 +598,6 @@ class StaffController extends Controller
                 'reservation.Status as ReservationStatus'
             );
 
-        // Search by name or room
         if (!empty($filters['search'])) {
             $s = $filters['search'];
             $query->where(function($q) use ($s) {
@@ -595,17 +608,14 @@ class StaffController extends Controller
             });
         }
 
-        // Filter by reservation status
         if (!empty($filters['status'])) {
             $query->where('reservation.Status', $filters['status']);
         }
 
-        // Filter by payment method
         if (!empty($filters['method'])) {
             $query->where('payment.Payment_Method', $filters['method']);
         }
 
-        // Filter by date range
         if (!empty($filters['date_from'])) {
             $query->whereDate('payment.Payment_Date', '>=', $filters['date_from']);
         }
@@ -613,7 +623,6 @@ class StaffController extends Controller
             $query->whereDate('payment.Payment_Date', '<=', $filters['date_to']);
         }
 
-        // Count and total for filtered results banner
         $countFiltered = (clone $query)->count();
         $totalFiltered = (clone $query)->sum('payment.Amount');
 
@@ -730,10 +739,6 @@ class StaffController extends Controller
 
         return redirect('/staff/housekeeping')->with('success', 'Room cleaning status updated to ' . $status . '!');
     }
-
-    // ==========================================
-    // ROOMS VIEW (Staff read-only)
-    // ==========================================
 
     // ==========================================
     // ROOMS VIEW (Staff read-only)
@@ -878,5 +883,4 @@ class StaffController extends Controller
 
         return redirect('/staff/services')->with('success', 'Service "' . ($service->Service_Name ?? '') . '" deleted.');
     }
-
 }

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ChatController;
+use Cloudinary\Cloudinary;
 
 // ==========================================
 // GUEST ROUTES
@@ -230,13 +231,23 @@ Route::post('/payment-process', function (Request $request) {
 
 Route::post('/book-final-submit', function (Request $request) {
 
-    // 0. Handle receipt image upload
+    // 0. Handle receipt image upload via Cloudinary
     $receiptPath = null;
     if ($request->hasFile('receipt_image')) {
         $file = $request->file('receipt_image');
-        $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-        $file->storeAs('receipts', $filename, 'public');
-        $receiptPath = '/storage/receipts/' . $filename;
+
+        $cloudinary = new Cloudinary([
+            'cloud' => [
+                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                'api_key'    => env('CLOUDINARY_API_KEY'),
+                'api_secret' => env('CLOUDINARY_API_SECRET'),
+            ],
+        ]);
+
+        $uploaded    = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+            'folder' => 'receipts',
+        ]);
+        $receiptPath = $uploaded['secure_url'];
     }
 
     // 1. Save the reservation as Pending and get the new ID
