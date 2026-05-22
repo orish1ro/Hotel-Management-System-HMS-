@@ -15,19 +15,29 @@ class StaffController extends Controller
 
     private function uploadToCloudinary($file, $folder = 'hotel')
     {
-        $cloudinary = new Cloudinary([
-            'cloud' => [
-                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                'api_key'    => env('CLOUDINARY_API_KEY'),
-                'api_secret' => env('CLOUDINARY_API_SECRET'),
-            ],
-        ]);
+        // Online/production: use Cloudinary if credentials are set
+        if (env('CLOUDINARY_CLOUD_NAME') && env('CLOUDINARY_API_KEY') && env('CLOUDINARY_API_SECRET')) {
+            $cloudinary = new Cloudinary([
+                'cloud' => [
+                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                    'api_key'    => env('CLOUDINARY_API_KEY'),
+                    'api_secret' => env('CLOUDINARY_API_SECRET'),
+                ],
+            ]);
+            $uploaded = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                'folder' => $folder,
+            ]);
+            return $uploaded['secure_url'];
+        }
 
-        $uploaded = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-            'folder' => $folder,
-        ]);
-
-        return $uploaded['secure_url'];
+        // Offline/local: save to public/images folder
+        $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+        $dir      = public_path('images/' . $folder);
+        if (!file_exists($dir)) {
+            mkdir($dir, 0775, true);
+        }
+        $file->move($dir, $filename);
+        return '/images/' . $folder . '/' . $filename;
     }
 
     // ==========================================

@@ -231,23 +231,30 @@ Route::post('/payment-process', function (Request $request) {
 
 Route::post('/book-final-submit', function (Request $request) {
 
-    // 0. Handle receipt image upload via Cloudinary
+    // 0. Handle receipt image upload (Cloudinary online, local folder offline)
     $receiptPath = null;
     if ($request->hasFile('receipt_image')) {
         $file = $request->file('receipt_image');
 
-        $cloudinary = new Cloudinary([
-            'cloud' => [
-                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                'api_key'    => env('CLOUDINARY_API_KEY'),
-                'api_secret' => env('CLOUDINARY_API_SECRET'),
-            ],
-        ]);
-
-        $uploaded    = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-            'folder' => 'receipts',
-        ]);
-        $receiptPath = $uploaded['secure_url'];
+        if (env('CLOUDINARY_CLOUD_NAME') && env('CLOUDINARY_API_KEY') && env('CLOUDINARY_API_SECRET')) {
+            // Online/production: upload to Cloudinary
+            $cloudinary = new Cloudinary([
+                'cloud' => [
+                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                    'api_key'    => env('CLOUDINARY_API_KEY'),
+                    'api_secret' => env('CLOUDINARY_API_SECRET'),
+                ],
+            ]);
+            $uploaded    = $cloudinary->uploadApi()->upload($file->getRealPath(), ['folder' => 'receipts']);
+            $receiptPath = $uploaded['secure_url'];
+        } else {
+            // Offline/local: save to public/images/receipts
+            $filename    = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $dir         = public_path('images/receipts');
+            if (!file_exists($dir)) { mkdir($dir, 0775, true); }
+            $file->move($dir, $filename);
+            $receiptPath = '/images/receipts/' . $filename;
+        }
     }
 
     // 1. Save the reservation as Pending and get the new ID
